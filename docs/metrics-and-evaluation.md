@@ -72,8 +72,7 @@ not sum to 100%.
 
 ### Eligibility and target
 
-The evaluation manifest names the target. The current trained artifact targets `product`; `issue` is used for filtering and separate trend/anomaly monitoring, not presented as a trained issue router. A future issue router must publish its own target-specific split, support, calibration and abstention evidence. The label mapping, minimum class support, exclusions and features. Only information available at
-the routing decision time is eligible. The current public label is used as a
+The evaluation manifest names the target. The current trained artifact targets `product`; `issue` is used for filtering and separate trend/anomaly monitoring, not presented as a trained issue router. A future issue router must publish its own target-specific split, support, calibration and abstention evidence. The label mapping, minimum class support, exclusions and features are recorded. Only information available at the routing decision time is eligible. The current public label is used as a
 supervised target, not as proof that the label is objectively correct.
 
 Records are sorted chronologically with a deterministic complaint-ID tie-break.

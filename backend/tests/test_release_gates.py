@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 from cfpb_triage.cli import main
-from cfpb_triage.monitoring import SummaryEvaluationStore
+from cfpb_triage.monitoring import SummaryEvaluationStore, SummaryFactualityReview
 from cfpb_triage.schemas import UsageRecord
 from cfpb_triage.services.summary import (
     SummaryUnavailableError,
@@ -30,3 +30,20 @@ def test_bootstrap_demo_is_read_only_and_explicit(capsys) -> None:
     output = capsys.readouterr().out
     assert '"source_kind": "synthetic_offline_demo"' in output
     assert '"writes_performed": false' in output
+
+
+def test_factuality_metrics_preserve_public_live_source_kind() -> None:
+    store = SummaryEvaluationStore(
+        demo_mode=True,
+        source_kind="cfpb_public",
+    )
+    store.record(
+        "live-summary-1",
+        SummaryFactualityReview(
+            reviewer_id="reviewer-1",
+            factuality_score=5,
+            all_claims_supported=True,
+            quotes_exact=True,
+        ),
+    )
+    assert store.metrics()["measurement_basis"] == "manual_reviews_of_cfpb_public"

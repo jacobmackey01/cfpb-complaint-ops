@@ -239,9 +239,7 @@ def test_llm_disabled_flag_prevents_provider_call_even_for_public_case(
 
 def test_unique_exact_quote_text_repairs_model_offsets() -> None:
     payload = _payload()
-    payload.evidence_quotes = [
-        EvidenceQuote(text=NARRATIVE, start=1, end=2)
-    ]
+    payload.evidence_quotes = [EvidenceQuote(text=NARRATIVE, start=1, end=2)]
     normalized = normalize_exact_quotes(payload, NARRATIVE)
     assert normalized.evidence_quotes[0].start == 0
     assert normalized.evidence_quotes[0].end == len(NARRATIVE)

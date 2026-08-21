@@ -66,6 +66,11 @@ def create_app(
         demo_mode=getattr(
             repo, "session_only", repo.source_kind.value.startswith("synthetic")
         ),
+        source_kind=(
+            repo.source_kind.value
+            if hasattr(repo.source_kind, "value")
+            else str(repo.source_kind)
+        ),
     )
 
     @asynccontextmanager

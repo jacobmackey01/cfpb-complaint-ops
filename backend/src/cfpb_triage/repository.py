@@ -589,6 +589,7 @@ class ComplaintRepository:
                 if self._live
                 else "daily_stratified_monthly_capped_snapshot_sample"
             ),
+            limitation=self.limitation,
             dimension=dimension,
             series=points,
             source_kind=self.source_kind,
@@ -604,6 +605,12 @@ class ComplaintRepository:
         as_of = as_of or self._as_of()
         if self._demo or self._live:
             return AnomaliesResponse(
+                metric_basis=(
+                    "bounded_live_read"
+                    if self._live
+                    else "daily_stratified_monthly_capped_snapshot_sample"
+                ),
+                limitation=self.limitation,
                 items=[],
                 publication_lag_days=PUBLICATION_LAG_DAYS,
                 cutoff_date=anomaly_cutoff(as_of),
@@ -635,6 +642,7 @@ class ComplaintRepository:
                 if self._live
                 else "daily_stratified_monthly_capped_snapshot_sample"
             ),
+            limitation=self.limitation,
             items=items,
             publication_lag_days=PUBLICATION_LAG_DAYS,
             cutoff_date=anomaly_cutoff(as_of),

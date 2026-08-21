@@ -25,6 +25,7 @@ Verification commands:
 
 ```bash
 python .github/scripts/check_repository_privacy.py
+python .github/scripts/check_deployment_configuration.py
 python -m pip install -e ./backend pytest ruff
 python -m ruff check backend
 python -m ruff format --check backend

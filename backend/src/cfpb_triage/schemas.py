@@ -85,6 +85,7 @@ class TrendPoint(StrictModel):
 
 class TrendsResponse(StrictModel):
     metric_basis: str = "daily_stratified_monthly_capped_snapshot_sample"
+    limitation: str = CFPB_LIMITATION
     dimension: Literal["product", "issue"]
     series: list[TrendPoint]
     source_kind: SourceKind
@@ -104,6 +105,7 @@ class AnomalyRecord(StrictModel):
 
 class AnomaliesResponse(StrictModel):
     metric_basis: str = "daily_stratified_monthly_capped_snapshot_sample"
+    limitation: str = CFPB_LIMITATION
     items: list[AnomalyRecord]
     publication_lag_days: int = 15
     cutoff_date: date

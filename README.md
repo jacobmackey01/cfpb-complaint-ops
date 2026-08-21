@@ -22,8 +22,8 @@ produced from a frozen, hashed evaluation snapshot and verified independently.
   request record, SHA-256 hashes, schema checks and an immutable manifest.
 - A DuckDB analytical layer with documented metrics and source-to-serving
   lineage.
-- Chronologically evaluated product/issue routing with macro-F1, calibration,
-  an explicit abstention threshold and a manual-review queue.
+- Chronologically evaluated product routing with macro-F1, calibration,
+  an explicit abstention threshold and a manual-review queue. Product and issue labels are also monitored as separate trend/anomaly dimensions; issue routing is not claimed.
 - Product/issue trend monitoring and anomaly flags that provide evidence for
   investigation rather than causal claims.
 - Evidence-grounded narrative summaries that validate against a Pydantic

@@ -41,10 +41,17 @@ class SummaryFactualityReview(StrictModel):
 
 class SummaryEvaluationStore:
     def __init__(
-        self, *, database_path: Path = DUCKDB_PATH, demo_mode: bool = False
+        self,
+        *,
+        database_path: Path = DUCKDB_PATH,
+        demo_mode: bool = False,
+        source_kind: str | None = None,
     ) -> None:
         self.database_path = database_path
         self.demo_mode = demo_mode
+        self.source_kind = source_kind or (
+            "synthetic_offline_demo" if demo_mode else "cfpb_public"
+        )
         self._demo_rows: list[dict[str, Any]] = []
         self._lock = RLock()
 
@@ -119,7 +126,7 @@ class SummaryEvaluationStore:
                 "exact_quote_rate": (
                     sum(row["quotes_exact"] for row in rows) / count if count else None
                 ),
-                "measurement_basis": "manual_reviews_of_synthetic_offline_demo"
+                "measurement_basis": f"manual_reviews_of_{self.source_kind}"
                 if count
                 else "no_manually_reviewed_sample",
             }

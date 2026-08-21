@@ -23,6 +23,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: python .github/scripts/check_repository_privacy.py
+      - run: python .github/scripts/check_deployment_configuration.py
 
   backend:
     name: Python API and pipeline

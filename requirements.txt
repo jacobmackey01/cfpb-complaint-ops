@@ -1,0 +1,3 @@
+# Root deployment entry point. The backend owns exact runtime dependencies.
+-e ./backend
+

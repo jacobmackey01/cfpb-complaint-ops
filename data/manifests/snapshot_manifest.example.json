@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "snapshot_id": null,
+  "status": "example_only",
+  "source": "CFPB Consumer Complaint Database",
+  "as_of": null,
+  "extracted_at_utc": null,
+  "publication_lag_note": "Recent source dates may be incomplete: eligible complaints publish after a qualifying company response or after 15 days, whichever comes first; narrative processing can add further lag.",
+  "request": {
+    "relative_path": null,
+    "sha256": null,
+    "max_records": null
+  },
+  "records": {
+    "count": null,
+    "minimum_date_received": null,
+    "maximum_date_received": null,
+    "narrative_available_count": null
+  },
+  "source_pages": [],
+  "canonical_rowset_sha256": null,
+  "qa": {
+    "status": "not_run",
+    "report_sha256": null,
+    "hard_failure_count": null,
+    "warning_count": null
+  },
+  "code": {
+    "git_commit_sha": null,
+    "dirty": null,
+    "python_version": null,
+    "package_version": null
+  },
+  "note": "Example contract only. It contains no real snapshot evidence or data."
+}
+

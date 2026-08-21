@@ -1,0 +1,50 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+!.env.production.example
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.venv/
+venv/
+build/
+*.egg-info/
+
+# JavaScript / TypeScript
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+*.tsbuildinfo
+
+# Local data: only reviewed request/manifest metadata is publishable.
+data/*
+!data/README.md
+!data/requests/
+!data/requests/**
+!data/manifests/
+!data/manifests/**
+
+# Private/runtime artifacts require explicit privacy-reviewed promotion.
+artifacts/*
+!artifacts/README.md
+!artifacts/public/
+!artifacts/public/**
+
+# Local tools, deployment links, IDE and OS files
+work/
+.vercel/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

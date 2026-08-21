@@ -1,0 +1,23 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "env": {
+    "CFPB_LIVE_READ_MODE": "true",
+    "CFPB_ALLOW_DEMO_FALLBACK": "false",
+    "PUBLIC_DEMO_MODE": "false",
+    "LLM_SUMMARY_ENABLED": "false",
+    "LLM_MODEL": "gpt-5.6-luna"
+  },
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/app.py"
+    }
+  ]
+}

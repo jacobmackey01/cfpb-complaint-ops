@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "source": {
+    "name": "CFPB Consumer Complaint Database",
+    "api_url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/",
+    "documentation_url": "https://cfpb.github.io/api/ccdb/"
+  },
+  "as_of": null,
+  "max_records": null,
+  "sort": [
+    "date_received:desc",
+    "complaint_id:desc"
+  ],
+  "fields": [],
+  "filters": {},
+  "client": {
+    "package": "cfpb-triage",
+    "version": null
+  },
+  "note": "Example contract only. The pipeline fills bounded values and hashes the canonical request."
+}
+

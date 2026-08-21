@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cfpb-complaint-triage"
+version = "0.1.0"
+description = "Human-in-the-loop complaint operations backend over the public CFPB Consumer Complaint Database."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "duckdb>=1.2,<2",
+  "fastapi>=0.115,<1",
+  "httpx>=0.28,<1",
+  "joblib>=1.4,<2",
+  "numpy>=2,<3",
+  "openai>=2,<3",
+  "pydantic>=2.10,<3",
+  "scikit-learn>=1.6,<2",
+  "uvicorn[standard]>=0.34,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9",
+  "pytest-cov>=6,<7",
+  "ruff>=0.16,<1",
+]
+
+[project.scripts]
+cfpb-triage = "cfpb_triage.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cfpb_triage"]
+
+[tool.pytest.ini_options]
+addopts = "-q --strict-markers --disable-warnings"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["cfpb_triage"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+

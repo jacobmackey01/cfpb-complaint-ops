@@ -15,6 +15,7 @@ from cfpb_triage.data.snapshot import download_recent_snapshot
 from cfpb_triage.data.source_metrics import ingest_source_window_metrics
 from cfpb_triage.data.warehouse import build_warehouse
 from cfpb_triage.evaluation import (
+    SUMMARY_EVAL_SAMPLE_PATH,
     SUMMARY_REVIEW_TEMPLATE_PATH,
     export_summary_review_template,
     freeze_summary_factuality_sample,
@@ -290,7 +291,7 @@ def build_parser() -> argparse.ArgumentParser:
     summary_review.add_argument(
         "--sample",
         type=Path,
-        default=Path("artifacts/summary_factuality_sample.json"),
+        default=SUMMARY_EVAL_SAMPLE_PATH,
     )
     summary_review.add_argument(
         "--output", type=Path, default=SUMMARY_REVIEW_TEMPLATE_PATH

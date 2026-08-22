@@ -99,7 +99,7 @@ docker-compose.yml       Local full-stack runtime
 ```
 
 The public demonstration is deployed as two Vercel projects from the same Git
-SHA (`708e06b`):
+SHA (`233d6e7`):
 
 - API: <https://cfpb-complaint-ops-api.vercel.app>
 - Interface: <https://cfpb-complaint-ops-web.vercel.app>

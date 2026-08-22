@@ -1,3 +1,11 @@
-# Root deployment entry point. The backend owns exact runtime dependencies.
--e ./backend
-
+# Root deployment dependencies. Vercel's Python builder resolves this file
+# directly; the ASGI entry point adds backend/src to the import path.
+duckdb>=1.2,<2
+fastapi>=0.115,<1
+httpx>=0.28,<1
+joblib>=1.4,<2
+numpy>=2,<3
+openai>=2,<3
+pydantic>=2.10,<3
+scikit-learn>=1.6,<2
+uvicorn[standard]>=0.34,<1

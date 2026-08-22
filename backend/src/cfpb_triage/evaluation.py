@@ -183,8 +183,7 @@ def export_summary_review_template(
         "columns": list(SUMMARY_REVIEW_TEMPLATE_COLUMNS),
     }
 
- 
- 
+
 def _review_text(value: Any, *, field: str, row_number: int, maximum: int) -> str:
     text = str(value or "").strip()
     if not text:
@@ -217,11 +216,11 @@ def import_summary_review(
         )
     items = sample.get("items")
     if not isinstance(items, list):
-        raise ValueError("frozen sample items must be a list")
+        raise TypeError("frozen sample items must be a list")
     sample_by_id: dict[str, dict[str, Any]] = {}
     for item in items:
         if not isinstance(item, dict):
-            raise ValueError("frozen sample item must be an object")
+            raise TypeError("frozen sample item must be an object")
         complaint_id = str(item.get("complaint_id", "")).strip()
         if not complaint_id or complaint_id in sample_by_id:
             raise ValueError("frozen sample complaint IDs must be unique and nonblank")

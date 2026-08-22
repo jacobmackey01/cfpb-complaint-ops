@@ -13,8 +13,9 @@ CFPB API -> validated snapshot -> DuckDB/SQL model -> routing + anomaly models
          -> FastAPI -> React/TypeScript operations interface
 ```
 
-No performance result or deployment URL is claimed in this README until it is
-produced from a frozen, hashed evaluation snapshot and verified independently.
+Evaluation claims are tied to the frozen, hashed snapshot and release artifacts
+described below. The public deployment is verified at the bounded live-read
+endpoints listed in the deployment runbook; it is not a production case system.
 
 ## What the application supports
 
@@ -98,9 +99,16 @@ docker-compose.yml       Local full-stack runtime
 ```
 
 The public demonstration is deployed as two Vercel projects from the same Git
-SHA: the repository-root FastAPI project and the `frontend/` Vite project. Both
-use synthetic demo data, and review state is session-only. See the
-[deployment runbook](docs/deployment-runbook.md) for the release gates and
+SHA (`708e06b`):
+
+- API: <https://cfpb-complaint-ops-api.vercel.app>
+- Interface: <https://cfpb-complaint-ops-web.vercel.app>
+
+The API performs a bounded live CFPB read of at most 25 current records per
+request and returns `source_kind=cfpb_public`. Live cases have no trained
+router, remain abstained and require human review; review state is ephemeral.
+Public LLM generation is disabled, and no OpenAI key is shipped to the browser.
+See the [deployment runbook](docs/deployment-runbook.md) for release gates and
 cross-origin verification.
 
 ## Quick start

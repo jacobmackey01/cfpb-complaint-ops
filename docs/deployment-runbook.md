@@ -298,17 +298,28 @@ Capture these values for each public release:
 
 ```text
 Git repository:
+https://github.com/jacobmackey01/cfpb-complaint-ops
 Git commit SHA:
+708e06b19ead444354bc3024b7b1f79360638fcf
 CI run URL/status:
+https://github.com/jacobmackey01/cfpb-complaint-ops/actions/runs/32541263607 (all checks passed)
 Snapshot or demo artifact ID:
+CFPB snapshot manifest `a7f68aeecaa6be66496fd6db8aecf0ad46dc9a4037656f33ec2ced28d6c9d57e`
 Request/row/artifact SHA-256:
+Snapshot `d393f6a83dc9c5248bf969ff6470c498b84397a46dfc93f7a229360d00db0864`
 Model/evaluation version:
+Product router evaluation on the 10,000-row snapshot; live demo router state is `not_trained` and abstains.
 Price-table version:
+`gpt-5.6-luna` pricing table in `cfpb_triage.services.summary`
 Preview deployment ID/URL:
 Production deployment ID/URL:
+API `Aa7rVrStfpyr6MJKQUfdwSZnjhUy` / https://cfpb-complaint-ops-api.vercel.app; web `GaHbVY8YyNHXGHHggd6XFaQMkf9e` / https://cfpb-complaint-ops-web.vercel.app
 Deployment verification timestamp (UTC):
+2026-08-22T00:45Z
 Verifier:
+Automated HTTPS checks plus authenticated Vercel deployment status
 Known limitations:
+Snapshot is 10,000 rows rather than the 100,000 maximum; live reads are bounded to 25 records, complaint data are not representative, company counts are not comparative performance, and summary factuality remains unreviewed (`n=0`).
 Rollback target:
 ```
 

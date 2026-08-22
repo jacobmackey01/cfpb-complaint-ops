@@ -215,3 +215,39 @@ def test_private_review_import_rejects_extra_narrative_column_before_writing(
             worksheet_path=worksheet_path,
             database_path=database,
         )
+
+def test_private_review_import_rejects_sample_mismatch_and_invalid_boolean(
+    tmp_path,
+) -> None:
+    database = tmp_path / "sample.duckdb"
+    _database(database)
+    sample_path = tmp_path / "sample.json"
+    freeze_summary_factuality_sample(
+        database_path=database,
+        output_path=sample_path,
+        sample_size=1,
+        seed=42,
+    )
+    worksheet_path = tmp_path / "review.csv"
+    export_summary_review_template(
+        sample_path=sample_path,
+        output_path=worksheet_path,
+    )
+    _complete_worksheet(worksheet_path)
+    with worksheet_path.open(encoding="utf-8", newline="") as stream:
+        reader = csv.DictReader(stream)
+        fieldnames = reader.fieldnames
+        rows = list(reader)
+    assert fieldnames is not None
+
+    rows[0]["complaint_id"] = "not-in-frozen-sample"
+    with worksheet_path.open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    with pytest.raises(ValueError, match="not present in the frozen sample"):
+        import_summary_review(
+            sample_path=sample_path,
+            worksheet_path=worksheet_path,
+            database_path=database,
+        )

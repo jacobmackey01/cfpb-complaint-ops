@@ -16,3 +16,9 @@ def test_snapshot_limit_cannot_exceed_public_contract(command: str) -> None:
         build_parser().parse_args(
             [command, "--as-of", "2026-08-21", "--max-records", "100001"]
         )
+
+
+def test_summary_review_export_command_is_available() -> None:
+    args = build_parser().parse_args(["export-summary-review"])
+    assert args.command == "export-summary-review"
+    assert args.output.name == "summary_factuality_review_template.csv"

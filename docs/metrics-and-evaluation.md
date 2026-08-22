@@ -218,6 +218,19 @@ and adjudication status. An automated quote check does not substitute for this
 manual factuality sample. The sample result cannot be generalised beyond its
 documented selection frame.
 
+### Private review worksheet
+
+The command `cfpb-triage export-summary-review` accepts only a sample whose
+status is `frozen_unreviewed` and writes a bounded CSV containing IDs and
+stratification fields (`complaint_id`, month and product) plus blank rubric
+columns. It deliberately excludes complaint narratives, generated summaries and
+free-text reviewer notes. The export is a worksheet, not review evidence: it
+returns `reviewed_sample_count=0`, does not mutate the frozen sample, and refuses
+to export a sample with another status. Reviewers inspect narratives and drafts
+under approved private data controls; only completed review records may change
+the monitoring metrics.
+
+
 ### Latency
 
 For all summary attempts, measure server-side monotonic elapsed time and report

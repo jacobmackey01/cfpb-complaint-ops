@@ -3,6 +3,8 @@ from __future__ import annotations
 import csv
 from datetime import date
 
+import pytest
+
 import duckdb
 from cfpb_triage.evaluation import (
     SUMMARY_REVIEW_TEMPLATE_COLUMNS,

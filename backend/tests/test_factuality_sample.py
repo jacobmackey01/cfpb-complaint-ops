@@ -174,6 +174,13 @@ def test_private_review_import_validates_and_persists_completed_rows(tmp_path) -
     finally:
         connection.close()
 
+    with pytest.raises(ValueError, match="already reviewed"):
+        import_summary_review(
+            sample_path=sample_path,
+            worksheet_path=worksheet_path,
+            database_path=database,
+        )
+
 
 def test_private_review_import_rejects_extra_narrative_column_before_writing(
     tmp_path,

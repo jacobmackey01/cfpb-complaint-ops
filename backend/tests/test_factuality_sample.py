@@ -3,9 +3,8 @@ from __future__ import annotations
 import csv
 from datetime import date
 
-import pytest
-
 import duckdb
+import pytest
 from cfpb_triage.evaluation import (
     SUMMARY_REVIEW_TEMPLATE_COLUMNS,
     export_summary_review_template,
@@ -92,7 +91,6 @@ def test_review_template_is_id_only_blank_and_never_review_evidence(tmp_path) ->
     assert result["reviewed_sample_count"] == 0
     assert result["contains_narratives"] is False
     assert result["source_sample_manifest_sha256"] == frozen["sample_manifest_sha256"]
-
 
     with output_path.open(encoding="utf-8", newline="") as stream:
         rows = list(csv.DictReader(stream))

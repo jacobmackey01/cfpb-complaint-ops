@@ -136,12 +136,12 @@ def export_summary_review_template(
         )
     items = sample.get("items")
     if not isinstance(items, list):
-        raise ValueError("frozen sample items must be a list")
+        raise TypeError("frozen sample items must be a list")
 
     rows: list[dict[str, str]] = []
     for index, item in enumerate(items, start=1):
         if not isinstance(item, dict):
-            raise ValueError("frozen sample item must be an object")
+            raise TypeError("frozen sample item must be an object")
         required = ("complaint_id", "month", "product")
         if any(not str(item.get(key, "")).strip() for key in required):
             raise ValueError("frozen sample item is missing an ID or stratum field")

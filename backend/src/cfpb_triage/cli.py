@@ -14,7 +14,11 @@ from cfpb_triage.data.quality import run_quality_checks
 from cfpb_triage.data.snapshot import download_recent_snapshot
 from cfpb_triage.data.source_metrics import ingest_source_window_metrics
 from cfpb_triage.data.warehouse import build_warehouse
-from cfpb_triage.evaluation import freeze_summary_factuality_sample
+from cfpb_triage.evaluation import (
+    SUMMARY_REVIEW_TEMPLATE_PATH,
+    export_summary_review_template,
+    freeze_summary_factuality_sample,
+)
 from cfpb_triage.modeling.anomalies import generate_anomaly_report
 from cfpb_triage.modeling.router import (
     apply_router_to_warehouse,
@@ -175,6 +179,16 @@ def cmd_freeze_summary_eval(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_export_summary_review(args: argparse.Namespace) -> int:
+    _print(
+        export_summary_review_template(
+            sample_path=args.sample,
+            output_path=args.output,
+        )
+    )
+    return 0
+
+
 def cmd_bootstrap_demo(_: argparse.Namespace) -> int:
     cases = synthetic_cases()
     _print(
@@ -268,6 +282,20 @@ def build_parser() -> argparse.ArgumentParser:
     summary_eval.add_argument("--seed", type=int, default=42)
     summary_eval.add_argument("--database", type=Path, default=DUCKDB_PATH)
     summary_eval.set_defaults(handler=cmd_freeze_summary_eval)
+
+    summary_review = subparsers.add_parser(
+        "export-summary-review",
+        help="export a blank ID-only worksheet for private manual summary review",
+    )
+    summary_review.add_argument(
+        "--sample",
+        type=Path,
+        default=Path("artifacts/summary_factuality_sample.json"),
+    )
+    summary_review.add_argument(
+        "--output", type=Path, default=SUMMARY_REVIEW_TEMPLATE_PATH
+    )
+    summary_review.set_defaults(handler=cmd_export_summary_review)
 
     demo = subparsers.add_parser(
         "bootstrap-demo",

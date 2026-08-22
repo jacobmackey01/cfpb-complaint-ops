@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 from threading import RLock
@@ -8,18 +9,46 @@ from typing import Any
 import duckdb
 from pydantic import Field
 
-from cfpb_triage.paths import DUCKDB_PATH
+from cfpb_triage.paths import ARTIFACT_DIR, DUCKDB_PATH
 from cfpb_triage.schemas import StrictModel
 
 RUBRIC_VERSION = "summary-factuality-v1"
 SAMPLE_FRAME = "frozen evaluation set selected before review"
 SAMPLE_SEED = 42
 SAMPLE_STRATA = ["month", "product"]
+SUMMARY_EVAL_SAMPLE_PATH = ARTIFACT_DIR / "summary_factuality_sample.json"
 
 
-def _review_contract(count: int) -> dict[str, Any]:
+def _sample_metadata() -> tuple[int | None, str | None, str | None]:
+    if not SUMMARY_EVAL_SAMPLE_PATH.exists():
+        return None, None, None
+    try:
+        sample = json.loads(SUMMARY_EVAL_SAMPLE_PATH.read_text(encoding="utf-8"))
+        selection = sample.get("sample_selection", {})
+        return (
+            int(selection.get("selected_sample_size", 0)),
+            sample.get("sample_manifest_sha256"),
+            sample.get("parent_snapshot_sha256"),
+        )
+    except (OSError, TypeError, ValueError):
+        # A malformed local sample must not turn monitoring into a 500. The
+        # release gate remains visibly unavailable until the sample is repaired.
+        return None, None, None
+
+
+def _review_contract(
+    count: int,
+    *,
+    expected_count: int | None = None,
+) -> dict[str, Any]:
+    if count == 0:
+        status = "unavailable_until_frozen_sample_reviewed"
+    elif expected_count is not None and count < expected_count:
+        status = "partially_reviewed"
+    else:
+        status = "reviewed"
     return {
-        "status": ("reviewed" if count else "unavailable_until_frozen_sample_reviewed"),
+        "status": status,
         "rubric_version": RUBRIC_VERSION,
         "sample_frame": SAMPLE_FRAME,
         "sample_selection": {
@@ -27,6 +56,7 @@ def _review_contract(count: int) -> dict[str, Any]:
             "seed": SAMPLE_SEED,
             "strata": SAMPLE_STRATA,
         },
+        "expected_review_sample_count": expected_count,
     }
 
 
@@ -104,6 +134,9 @@ class SummaryEvaluationStore:
         return row
 
     def metrics(self) -> dict[str, Any]:
+        expected_count, sample_manifest_sha256, parent_snapshot_sha256 = (
+            _sample_metadata()
+        )
         if self.demo_mode:
             with self._lock:
                 rows = [
@@ -111,8 +144,10 @@ class SummaryEvaluationStore:
                 ]
             count = len(rows)
             return {
-                **_review_contract(count),
+                **_review_contract(count, expected_count=expected_count),
                 "reviewed_sample_count": count,
+                "sample_manifest_sha256": sample_manifest_sha256,
+                "parent_snapshot_sha256": parent_snapshot_sha256,
                 "mean_factuality_score": (
                     sum(row["factuality_score"] for row in rows) / count
                     if count
@@ -144,8 +179,10 @@ class SummaryEvaluationStore:
         finally:
             connection.close()
         return {
-            **_review_contract(int(row[0])),
+            **_review_contract(int(row[0]), expected_count=expected_count),
             "reviewed_sample_count": row[0],
+            "sample_manifest_sha256": sample_manifest_sha256,
+            "parent_snapshot_sha256": parent_snapshot_sha256,
             "mean_factuality_score": row[1],
             "all_claims_supported_rate": row[2],
             "exact_quote_rate": row[3],

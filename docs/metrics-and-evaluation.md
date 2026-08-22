@@ -230,6 +230,16 @@ to export a sample with another status. Reviewers inspect narratives and drafts
 under approved private data controls; only completed review records may change
 the monitoring metrics.
 
+The companion `cfpb-triage import-summary-review` command requires the exact
+worksheet columns, requires every row's complaint ID and month/product stratum
+to match the frozen sample, and requires nonblank summary/reviewer IDs, a 1--5
+factuality score, and explicit boolean values. It validates all rows before
+writing `SummaryEvaluationStore` records, rejects narrative or extra columns,
+and leaves the frozen sample status unchanged. Imported rows with
+`included_in_review_sample=false` remain stored for audit but are excluded from
+the reported factuality denominator.
+
+
 
 ### Latency
 

@@ -9,6 +9,7 @@ from cfpb_triage.evaluation import (
     SUMMARY_REVIEW_TEMPLATE_COLUMNS,
     export_summary_review_template,
     freeze_summary_factuality_sample,
+    import_summary_review,
 )
 
 
@@ -114,4 +115,154 @@ def test_review_template_refuses_a_non_frozen_sample(tmp_path) -> None:
         export_summary_review_template(
             sample_path=sample_path,
             output_path=tmp_path / "review.csv",
+        )
+
+
+def _complete_worksheet(path) -> None:
+    with path.open(encoding="utf-8", newline="") as stream:
+        reader = csv.DictReader(stream)
+        fieldnames = reader.fieldnames
+        rows = list(reader)
+    assert fieldnames is not None
+    for index, row in enumerate(rows, start=1):
+        row["summary_id"] = f"summary-{index}"
+        row["reviewer_id"] = "reviewer-1"
+        row["factuality_score_1_to_5"] = "4"
+        row["all_claims_supported"] = "true"
+        row["quotes_exact"] = "true"
+        row["included_in_review_sample"] = "true"
+    with path.open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def test_private_review_import_validates_and_persists_completed_rows(tmp_path) -> None:
+    database = tmp_path / "sample.duckdb"
+    _database(database)
+    sample_path = tmp_path / "sample.json"
+    freeze_summary_factuality_sample(
+        database_path=database,
+        output_path=sample_path,
+        sample_size=4,
+        seed=42,
+    )
+    worksheet_path = tmp_path / "review.csv"
+    export_summary_review_template(
+        sample_path=sample_path,
+        output_path=worksheet_path,
+    )
+    _complete_worksheet(worksheet_path)
+
+    result = import_summary_review(
+        sample_path=sample_path,
+        worksheet_path=worksheet_path,
+        database_path=database,
+    )
+
+    assert result["status"] == "private_reviews_imported"
+    assert result["imported_row_count"] == 4
+    assert result["reviewed_sample_count"] == 4
+    assert result["metrics"]["status"] == "reviewed"
+    assert result["source_sample_changed"] is False
+    assert '"status": "frozen_unreviewed"' in sample_path.read_text(encoding="utf-8")
+    connection = duckdb.connect(str(database), read_only=True)
+    try:
+        assert connection.execute(
+            "SELECT count(*) FROM summary_factuality_reviews"
+        ).fetchone()[0] == 4
+    finally:
+        connection.close()
+
+    with pytest.raises(ValueError, match="already reviewed"):
+        import_summary_review(
+            sample_path=sample_path,
+            worksheet_path=worksheet_path,
+            database_path=database,
+        )
+
+
+def test_private_review_import_rejects_extra_narrative_column_before_writing(
+    tmp_path,
+) -> None:
+    database = tmp_path / "sample.duckdb"
+    _database(database)
+    sample_path = tmp_path / "sample.json"
+    freeze_summary_factuality_sample(
+        database_path=database,
+        output_path=sample_path,
+        sample_size=1,
+        seed=42,
+    )
+    worksheet_path = tmp_path / "review.csv"
+    export_summary_review_template(
+        sample_path=sample_path,
+        output_path=worksheet_path,
+    )
+    with worksheet_path.open(encoding="utf-8", newline="") as stream:
+        reader = csv.DictReader(stream)
+        fieldnames = list(reader.fieldnames or []) + ["narrative"]
+        rows = list(reader)
+    rows[0]["narrative"] = "should never be imported"
+    with worksheet_path.open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+
+    with pytest.raises(ValueError, match="columns"):
+        import_summary_review(
+            sample_path=sample_path,
+            worksheet_path=worksheet_path,
+            database_path=database,
+        )
+
+
+def test_private_review_import_rejects_sample_mismatch_and_invalid_boolean(
+    tmp_path,
+) -> None:
+    database = tmp_path / "sample.duckdb"
+    _database(database)
+    sample_path = tmp_path / "sample.json"
+    freeze_summary_factuality_sample(
+        database_path=database,
+        output_path=sample_path,
+        sample_size=1,
+        seed=42,
+    )
+    worksheet_path = tmp_path / "review.csv"
+    export_summary_review_template(
+        sample_path=sample_path,
+        output_path=worksheet_path,
+    )
+    _complete_worksheet(worksheet_path)
+    with worksheet_path.open(encoding="utf-8", newline="") as stream:
+        reader = csv.DictReader(stream)
+        fieldnames = reader.fieldnames
+        rows = list(reader)
+    assert fieldnames is not None
+    frozen_id = rows[0]["complaint_id"]
+
+    rows[0]["complaint_id"] = "not-in-frozen-sample"
+    with worksheet_path.open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    with pytest.raises(ValueError, match="not present in the frozen sample"):
+        import_summary_review(
+            sample_path=sample_path,
+            worksheet_path=worksheet_path,
+            database_path=database,
+        )
+
+    rows[0]["complaint_id"] = frozen_id
+    rows[0]["all_claims_supported"] = "yes"
+    with worksheet_path.open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    with pytest.raises(ValueError, match="exactly true or false"):
+        import_summary_review(
+            sample_path=sample_path,
+            worksheet_path=worksheet_path,
+            database_path=database,
         )

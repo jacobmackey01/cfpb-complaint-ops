@@ -22,3 +22,9 @@ def test_summary_review_export_command_is_available() -> None:
     args = build_parser().parse_args(["export-summary-review"])
     assert args.command == "export-summary-review"
     assert args.output.name == "summary_factuality_review_template.csv"
+
+
+def test_summary_review_import_command_is_available() -> None:
+    args = build_parser().parse_args(["import-summary-review"])
+    assert args.command == "import-summary-review"
+    assert args.worksheet.name == "summary_factuality_review_template.csv"

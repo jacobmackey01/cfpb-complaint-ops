@@ -19,11 +19,11 @@ SAMPLE_STRATA = ["month", "product"]
 SUMMARY_EVAL_SAMPLE_PATH = ARTIFACT_DIR / "summary_factuality_sample.json"
 
 
-def _sample_metadata() -> tuple[int | None, str | None, str | None]:
-    if not SUMMARY_EVAL_SAMPLE_PATH.exists():
+def _sample_metadata(sample_path: Path) -> tuple[int | None, str | None, str | None]:
+    if not sample_path.exists():
         return None, None, None
     try:
-        sample = json.loads(SUMMARY_EVAL_SAMPLE_PATH.read_text(encoding="utf-8"))
+        sample = json.loads(sample_path.read_text(encoding="utf-8"))
         selection = sample.get("sample_selection", {})
         return (
             int(selection.get("selected_sample_size", 0)),
@@ -76,8 +76,10 @@ class SummaryEvaluationStore:
         database_path: Path = DUCKDB_PATH,
         demo_mode: bool = False,
         source_kind: str | None = None,
+        sample_path: Path | None = None,
     ) -> None:
         self.database_path = database_path
+        self.sample_path = sample_path or SUMMARY_EVAL_SAMPLE_PATH
         self.demo_mode = demo_mode
         self.source_kind = source_kind or (
             "synthetic_offline_demo" if demo_mode else "cfpb_public"
@@ -135,7 +137,7 @@ class SummaryEvaluationStore:
 
     def metrics(self) -> dict[str, Any]:
         expected_count, sample_manifest_sha256, parent_snapshot_sha256 = (
-            _sample_metadata()
+            _sample_metadata(self.sample_path)
         )
         if self.demo_mode:
             with self._lock:

@@ -349,7 +349,7 @@ def import_summary_review(
     if duplicate_summary_ids:
         raise ValueError("worksheet contains summary_id values already reviewed")
 
-    store = SummaryEvaluationStore(database_path=database_path)
+    store = SummaryEvaluationStore(database_path=database_path, sample_path=sample_path)
     for summary_id, review in records:
         store.record(summary_id, review)
     metrics = store.metrics()

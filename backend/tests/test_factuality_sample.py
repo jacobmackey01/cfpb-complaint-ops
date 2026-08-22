@@ -168,9 +168,12 @@ def test_private_review_import_validates_and_persists_completed_rows(tmp_path) -
     assert '"status": "frozen_unreviewed"' in sample_path.read_text(encoding="utf-8")
     connection = duckdb.connect(str(database), read_only=True)
     try:
-        assert connection.execute(
-            "SELECT count(*) FROM summary_factuality_reviews"
-        ).fetchone()[0] == 4
+        assert (
+            connection.execute(
+                "SELECT count(*) FROM summary_factuality_reviews"
+            ).fetchone()[0]
+            == 4
+        )
     finally:
         connection.close()
 

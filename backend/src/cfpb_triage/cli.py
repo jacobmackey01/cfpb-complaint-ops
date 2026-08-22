@@ -18,6 +18,7 @@ from cfpb_triage.evaluation import (
     SUMMARY_EVAL_SAMPLE_PATH,
     SUMMARY_REVIEW_TEMPLATE_PATH,
     export_summary_review_template,
+    import_summary_review,
     freeze_summary_factuality_sample,
 )
 from cfpb_triage.modeling.anomalies import generate_anomaly_report
@@ -190,6 +191,17 @@ def cmd_export_summary_review(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_import_summary_review(args: argparse.Namespace) -> int:
+    _print(
+        import_summary_review(
+            sample_path=args.sample,
+            worksheet_path=args.worksheet,
+            database_path=args.database,
+        )
+    )
+    return 0
+
+
 def cmd_bootstrap_demo(_: argparse.Namespace) -> int:
     cases = synthetic_cases()
     _print(
@@ -297,6 +309,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--output", type=Path, default=SUMMARY_REVIEW_TEMPLATE_PATH
     )
     summary_review.set_defaults(handler=cmd_export_summary_review)
+
+    summary_review_import = subparsers.add_parser(
+        "import-summary-review",
+        help="validate and import completed private summary review rows",
+    )
+    summary_review_import.add_argument(
+        "--sample",
+        type=Path,
+        default=SUMMARY_EVAL_SAMPLE_PATH,
+    )
+    summary_review_import.add_argument(
+        "--worksheet",
+        type=Path,
+        default=SUMMARY_REVIEW_TEMPLATE_PATH,
+    )
+    summary_review_import.add_argument(
+        "--database", type=Path, default=DUCKDB_PATH
+    )
+    summary_review_import.set_defaults(handler=cmd_import_summary_review)
 
     demo = subparsers.add_parser(
         "bootstrap-demo",

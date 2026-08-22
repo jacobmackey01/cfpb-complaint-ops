@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import hashlib
 import json
 from collections import defaultdict, deque
@@ -15,6 +16,19 @@ SUMMARY_EVAL_SAMPLE_PATH = ARTIFACT_DIR / "summary_factuality_sample.json"
 SUMMARY_EVAL_RUBRIC_VERSION = "summary-factuality-v1"
 SUMMARY_EVAL_SEED = 42
 SUMMARY_EVAL_STRATA = ("month", "product")
+SUMMARY_REVIEW_TEMPLATE_PATH = ARTIFACT_DIR / "summary_factuality_review_template.csv"
+SUMMARY_REVIEW_TEMPLATE_COLUMNS = (
+    "review_row_id",
+    "summary_id",
+    "complaint_id",
+    "month",
+    "product",
+    "reviewer_id",
+    "factuality_score_1_to_5",
+    "all_claims_supported",
+    "quotes_exact",
+    "included_in_review_sample",
+)
 
 
 def _rank(seed: int, complaint_id: str) -> str:
@@ -97,3 +111,73 @@ def freeze_summary_factuality_sample(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     return payload
+
+
+def export_summary_review_template(
+    *,
+    sample_path: Path = SUMMARY_EVAL_SAMPLE_PATH,
+    output_path: Path = SUMMARY_REVIEW_TEMPLATE_PATH,
+) -> dict[str, Any]:
+    """Export a bounded, ID-only worksheet for private manual review.
+
+    The worksheet contains no complaint narrative, generated summary, or free-text
+    reviewer notes. It is intentionally a blank template and cannot change the
+    frozen sample's 'frozen_unreviewed' status. Reviewers should use complaint
+    IDs to inspect source material under the approved private data controls, then
+    record evidence through the review workflow rather than copying narrative into
+    this artifact.
+    """
+
+    sample = json.loads(sample_path.read_text(encoding="utf-8"))
+    if sample.get("status") != "frozen_unreviewed":
+        raise ValueError(
+            "review worksheet export requires a frozen_unreviewed sample; "
+            "review evidence must not be inferred or overwritten"
+        )
+    items = sample.get("items")
+    if not isinstance(items, list):
+        raise ValueError("frozen sample items must be a list")
+
+    rows: list[dict[str, str]] = []
+    for index, item in enumerate(items, start=1):
+        if not isinstance(item, dict):
+            raise ValueError("frozen sample item must be an object")
+        required = ("complaint_id", "month", "product")
+        if any(not str(item.get(key, "")).strip() for key in required):
+            raise ValueError("frozen sample item is missing an ID or stratum field")
+        rows.append(
+            {
+                "review_row_id": f"summary-review-{index:04d}",
+                "summary_id": "",
+                "complaint_id": str(item["complaint_id"]),
+                "month": str(item["month"]),
+                "product": str(item["product"]),
+                "reviewer_id": "",
+                "factuality_score_1_to_5": "",
+                "all_claims_supported": "",
+                "quotes_exact": "",
+                "included_in_review_sample": "",
+            }
+        )
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(
+            stream,
+            fieldnames=SUMMARY_REVIEW_TEMPLATE_COLUMNS,
+            lineterminator="\n",
+        )
+        writer.writeheader()
+        writer.writerows(rows)
+
+    return {
+        "status": "template_exported_not_reviewed",
+        "source_sample_status": sample["status"],
+        "reviewed_sample_count": 0,
+        "contains_narratives": False,
+        "contains_generated_summaries": False,
+        "source_sample_manifest_sha256": sample.get("sample_manifest_sha256"),
+        "row_count": len(rows),
+        "output_path": str(output_path),
+        "columns": list(SUMMARY_REVIEW_TEMPLATE_COLUMNS),
+    }

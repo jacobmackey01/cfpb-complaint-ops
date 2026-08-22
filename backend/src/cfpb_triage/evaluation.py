@@ -10,6 +10,7 @@ from typing import Any
 
 import duckdb
 
+from cfpb_triage.monitoring import SummaryEvaluationStore, SummaryFactualityReview
 from cfpb_triage.paths import ARTIFACT_DIR, DUCKDB_PATH
 
 SUMMARY_EVAL_SAMPLE_PATH = ARTIFACT_DIR / "summary_factuality_sample.json"
@@ -180,4 +181,165 @@ def export_summary_review_template(
         "row_count": len(rows),
         "output_path": str(output_path),
         "columns": list(SUMMARY_REVIEW_TEMPLATE_COLUMNS),
+    }
+
+ 
+ 
+def _review_text(value: Any, *, field: str, row_number: int, maximum: int) -> str:
+    text = str(value or "").strip()
+    if not text:
+        raise ValueError(f"row {row_number}: {field} must be nonblank")
+    if len(text) > maximum or any(ord(character) < 32 for character in text):
+        raise ValueError(f"row {row_number}: {field} is invalid")
+    return text
+
+
+def _review_bool(value: Any, *, field: str, row_number: int) -> bool:
+    text = str(value or "").strip().lower()
+    if text not in {"true", "false"}:
+        raise ValueError(f"row {row_number}: {field} must be exactly true or false")
+    return text == "true"
+
+
+def import_summary_review(
+    *,
+    sample_path: Path = SUMMARY_EVAL_SAMPLE_PATH,
+    worksheet_path: Path = SUMMARY_REVIEW_TEMPLATE_PATH,
+    database_path: Path = DUCKDB_PATH,
+) -> dict[str, Any]:
+    """Validate and persist completed private review rows without narrative data."""
+
+    sample = json.loads(sample_path.read_text(encoding="utf-8"))
+    if sample.get("status") != "frozen_unreviewed":
+        raise ValueError(
+            "review import requires a frozen_unreviewed sample; "
+            "the source sample is never marked reviewed by this command"
+        )
+    items = sample.get("items")
+    if not isinstance(items, list):
+        raise ValueError("frozen sample items must be a list")
+    sample_by_id: dict[str, dict[str, Any]] = {}
+    for item in items:
+        if not isinstance(item, dict):
+            raise ValueError("frozen sample item must be an object")
+        complaint_id = str(item.get("complaint_id", "")).strip()
+        if not complaint_id or complaint_id in sample_by_id:
+            raise ValueError("frozen sample complaint IDs must be unique and nonblank")
+        sample_by_id[complaint_id] = item
+
+    with worksheet_path.open(encoding="utf-8", newline="") as stream:
+        reader = csv.DictReader(stream)
+        if tuple(reader.fieldnames or ()) != SUMMARY_REVIEW_TEMPLATE_COLUMNS:
+            raise ValueError(
+                "review worksheet columns must exactly match the ID-only template"
+            )
+        worksheet_rows = list(reader)
+
+    if not worksheet_rows:
+        raise ValueError("review worksheet must contain at least one completed row")
+
+    records: list[tuple[str, SummaryFactualityReview]] = []
+    seen_complaint_ids: set[str] = set()
+    seen_summary_ids: set[str] = set()
+    for row_number, row in enumerate(worksheet_rows, start=2):
+        if None in row:
+            raise ValueError(f"row {row_number}: unexpected extra worksheet values")
+        complaint_id = _review_text(
+            row.get("complaint_id"),
+            field="complaint_id",
+            row_number=row_number,
+            maximum=200,
+        )
+        sample_item = sample_by_id.get(complaint_id)
+        if sample_item is None:
+            raise ValueError(
+                f"row {row_number}: complaint_id is not present in the frozen sample"
+            )
+        if complaint_id in seen_complaint_ids:
+            raise ValueError(f"row {row_number}: duplicate complaint_id")
+        seen_complaint_ids.add(complaint_id)
+
+        month = _review_text(
+            row.get("month"), field="month", row_number=row_number, maximum=20
+        )
+        product = _review_text(
+            row.get("product"), field="product", row_number=row_number, maximum=200
+        )
+        if month != str(sample_item.get("month")) or product != str(
+            sample_item.get("product")
+        ):
+            raise ValueError(
+                f"row {row_number}: frozen sample ID/stratum values do not match"
+            )
+
+        summary_id = _review_text(
+            row.get("summary_id"),
+            field="summary_id",
+            row_number=row_number,
+            maximum=200,
+        )
+        if summary_id in seen_summary_ids:
+            raise ValueError(f"row {row_number}: duplicate summary_id")
+        seen_summary_ids.add(summary_id)
+        reviewer_id = _review_text(
+            row.get("reviewer_id"),
+            field="reviewer_id",
+            row_number=row_number,
+            maximum=100,
+        )
+        score_text = _review_text(
+            row.get("factuality_score_1_to_5"),
+            field="factuality_score_1_to_5",
+            row_number=row_number,
+            maximum=1,
+        )
+        try:
+            factuality_score = int(score_text)
+        except ValueError as exc:
+            raise ValueError(
+                f"row {row_number}: factuality_score_1_to_5 must be an integer from 1 to 5"
+            ) from exc
+        if factuality_score not in range(1, 6):
+            raise ValueError(
+                f"row {row_number}: factuality_score_1_to_5 must be an integer from 1 to 5"
+            )
+
+        records.append(
+            (
+                summary_id,
+                SummaryFactualityReview(
+                    reviewer_id=reviewer_id,
+                    factuality_score=factuality_score,
+                    all_claims_supported=_review_bool(
+                        row.get("all_claims_supported"),
+                        field="all_claims_supported",
+                        row_number=row_number,
+                    ),
+                    quotes_exact=_review_bool(
+                        row.get("quotes_exact"),
+                        field="quotes_exact",
+                        row_number=row_number,
+                    ),
+                    included_in_review_sample=_review_bool(
+                        row.get("included_in_review_sample"),
+                        field="included_in_review_sample",
+                        row_number=row_number,
+                    ),
+                ),
+            )
+        )
+
+    store = SummaryEvaluationStore(database_path=database_path)
+    for summary_id, review in records:
+        store.record(summary_id, review)
+    metrics = store.metrics()
+    return {
+        "status": "private_reviews_imported",
+        "source_sample_status": sample["status"],
+        "source_sample_manifest_sha256": sample.get("sample_manifest_sha256"),
+        "imported_row_count": len(records),
+        "reviewed_sample_count": metrics["reviewed_sample_count"],
+        "metrics": metrics,
+        "source_sample_changed": False,
+        "contains_narratives": False,
     }

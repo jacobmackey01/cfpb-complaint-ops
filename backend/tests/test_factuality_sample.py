@@ -93,7 +93,9 @@ def test_review_template_is_id_only_blank_and_never_review_evidence(tmp_path) ->
     assert result["contains_narratives"] is False
     assert result["source_sample_manifest_sha256"] == frozen["sample_manifest_sha256"]
 
-    rows = list(csv.DictReader(output_path.open(encoding="utf-8", newline="")))
+
+    with output_path.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.DictReader(stream))
     assert len(rows) == 4
     assert tuple(rows[0]) == SUMMARY_REVIEW_TEMPLATE_COLUMNS
     assert all(row["summary_id"] == "" for row in rows)

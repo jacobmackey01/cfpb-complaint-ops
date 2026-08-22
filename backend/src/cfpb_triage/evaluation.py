@@ -329,6 +329,27 @@ def import_summary_review(
             )
         )
 
+    existing_summary_ids: set[str] = set()
+    if database_path.exists():
+        connection = duckdb.connect(str(database_path), read_only=True)
+        try:
+            table_exists = connection.execute(
+                "SELECT count(*) FROM information_schema.tables "
+                "WHERE table_name = 'summary_factuality_reviews'"
+            ).fetchone()[0]
+            if table_exists:
+                existing_summary_ids = {
+                    str(row[0])
+                    for row in connection.execute(
+                        "SELECT summary_id FROM summary_factuality_reviews"
+                    ).fetchall()
+                }
+        finally:
+            connection.close()
+    duplicate_summary_ids = seen_summary_ids & existing_summary_ids
+    if duplicate_summary_ids:
+        raise ValueError("worksheet contains summary_id values already reviewed")
+
     store = SummaryEvaluationStore(database_path=database_path)
     for summary_id, review in records:
         store.record(summary_id, review)

@@ -216,6 +216,7 @@ def test_private_review_import_rejects_extra_narrative_column_before_writing(
             database_path=database,
         )
 
+
 def test_private_review_import_rejects_sample_mismatch_and_invalid_boolean(
     tmp_path,
 ) -> None:
@@ -239,13 +240,27 @@ def test_private_review_import_rejects_sample_mismatch_and_invalid_boolean(
         fieldnames = reader.fieldnames
         rows = list(reader)
     assert fieldnames is not None
+    frozen_id = rows[0]["complaint_id"]
 
     rows[0]["complaint_id"] = "not-in-frozen-sample"
     with worksheet_path.open("w", encoding="utf-8", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\\n")
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     with pytest.raises(ValueError, match="not present in the frozen sample"):
+        import_summary_review(
+            sample_path=sample_path,
+            worksheet_path=worksheet_path,
+            database_path=database,
+        )
+
+    rows[0]["complaint_id"] = frozen_id
+    rows[0]["all_claims_supported"] = "yes"
+    with worksheet_path.open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    with pytest.raises(ValueError, match="exactly true or false"):
         import_summary_review(
             sample_path=sample_path,
             worksheet_path=worksheet_path,

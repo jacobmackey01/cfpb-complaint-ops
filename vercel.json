@@ -16,8 +16,15 @@
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "^/(health|api/v1(?:/.*)?)$",
       "dest": "/app.py"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }

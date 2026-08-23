@@ -1,0 +1,33 @@
+{
+  "schema_version": "summary-factuality-review-v1",
+  "created_at": "2026-08-23",
+  "source_commit_sha": "830df48c050095ee8f99d5b63373525381d470d5",
+  "source_sample_manifest_sha256": "c9e13f5d11a98a3e63e75f423a8fca512bca59d93f67b300d988ce27ed2c4a4c",
+  "parent_snapshot_sha256": "d393f6a83dc9c5248bf969ff6470c498b84397a46dfc93f7a229360d00db0864",
+  "rubric_version": "summary-factuality-v1",
+  "measurement_basis": "manual_reviewed_sample",
+  "reviewer_mode": "human_review_with_ai_assistance",
+  "expected_review_sample_count": 50,
+  "reviewed_sample_count": 50,
+  "score_distribution": {
+    "1": 0,
+    "2": 0,
+    "3": 2,
+    "4": 3,
+    "5": 45
+  },
+  "mean_factuality_score": 4.86,
+  "all_claims_supported_rate": 0.9,
+  "exact_quote_rate": 1.0,
+  "privacy": {
+    "contains_narratives": false,
+    "contains_generated_summaries": false,
+    "contains_complaint_ids": false,
+    "contains_reviewer_notes": false,
+    "worksheet_retained_private": true
+  },
+  "limitation": "Aggregate results describe the documented frozen selection frame and do not generalise to all CFPB complaints or company performance.",
+  "public_demo_note": "The public Vercel live-read demo does not persist this private review store and therefore reports no runtime factuality sample.",
+  "artifact_sha256_basis": "SHA-256 of canonical UTF-8 JSON with artifact_sha256 omitted",
+  "artifact_sha256": "70d2bdf192630739ac441e07b25bc4098e4ac9dd70d9edd1d5aa4b4749e21198"
+}

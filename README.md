@@ -33,6 +33,17 @@ endpoints listed in the deployment runbook; it is not a production case system.
 - A case queue, operations dashboard and model-monitoring interface.
 - Containerised local execution, automated tests and GitHub Actions.
 
+### Manual human review evidence
+
+The frozen 50-case summary sample was manually reviewed with AI assistance under
+private local controls. The public aggregate record reports a mean factuality
+score of **4.86/5**, an all-claims-supported rate of **0.90**, and an exact-quote
+rate of **1.0**. The [aggregate artifact](artifacts/public/summary_factuality_review_metrics.json)
+and [evaluation notes](docs/metrics-and-evaluation.md) are public; narratives,
+generated drafts and the row-level worksheet remain private. These results are
+for the documented frozen selection frame, not a representative population or a
+comparative company-performance claim.
+
 ## Decision boundary
 
 The model proposes a route and can abstain. A person confirms or overrides the

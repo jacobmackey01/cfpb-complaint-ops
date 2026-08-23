@@ -10,6 +10,10 @@ and safe to publish. Examples include:
 - model configuration and hashes; and
 - a model binary only after a specific text-disclosure review.
 
+The aggregate [summary factuality review metrics](summary_factuality_review_metrics.json)
+record the completed private human review of the frozen sample. They contain no
+narratives, generated summaries, complaint IDs or reviewer worksheet fields.
+
 Each promoted artifact should include or accompany:
 
 - schema version and creation timestamp;

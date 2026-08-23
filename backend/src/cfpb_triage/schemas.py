@@ -123,11 +123,10 @@ class EvidenceQuote(StrictModel):
     start: int = Field(ge=0)
     end: int = Field(gt=0)
 
-    @model_validator(mode="after")
-    def valid_span(self) -> EvidenceQuote:
-        if self.end <= self.start:
-            raise ValueError("quote end must be greater than start")
-        return self
+    # The summary service validates the final span after it has had an
+    # opportunity to repair model-supplied offsets from the exact quote text.
+    # Keeping only non-negative/positive bounds here lets that fail-closed
+    # normalization run even when a provider returns the offsets reversed.
 
 
 class LLMSummaryPayload(StrictModel):

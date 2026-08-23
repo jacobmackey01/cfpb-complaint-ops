@@ -246,6 +246,17 @@ def test_unique_exact_quote_text_repairs_model_offsets() -> None:
     validate_exact_quotes(normalized, NARRATIVE)
 
 
+def test_unique_exact_quote_text_repairs_reversed_model_offsets() -> None:
+    payload = _payload()
+    payload.evidence_quotes = [
+        EvidenceQuote(text=NARRATIVE, start=len(NARRATIVE), end=1)
+    ]
+    normalized = normalize_exact_quotes(payload, NARRATIVE)
+    assert normalized.evidence_quotes[0].start == 0
+    assert normalized.evidence_quotes[0].end == len(NARRATIVE)
+    validate_exact_quotes(normalized, NARRATIVE)
+
+
 def test_ambiguous_or_altered_quote_text_fails_closed() -> None:
     payload = _payload()
     payload.evidence_quotes = [EvidenceQuote(text="charge", start=1, end=2)]

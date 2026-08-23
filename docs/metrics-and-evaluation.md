@@ -84,7 +84,18 @@ training period < validation period < frozen test period
 
 The validation partition selects hyperparameters, probability calibration and
 the abstention threshold. The test partition remains unopened until those
-choices and artifact hashes are frozen.
+choices and artifact hashes are frozen. The release gate is explicit: the
+frozen test window covers the last three complete months, requires at least 50
+narrative-eligible rows and at least two rows for every product represented in
+that window. If the gate fails, routing performance is returned as
+`unavailable_insufficient_test_support`; no macro-F1, accuracy, calibration or
+coverage claim is published. Normalized duplicate narratives are grouped by
+SHA-256 and the earliest row is retained so the same text cannot cross a split.
+
+The current local release passes this gate with 112 test rows across May--July
+2026 and support of at least two for each represented product. This is still a
+snapshot-sample evaluation, not a representative population estimate.
+
 
 ### Macro-F1
 
@@ -203,20 +214,21 @@ failures.
 ### Manual factuality
 
 A frozen sample is selected before review and records its source population,
-strata, random seed, sample count and exclusions. Reviewers split each draft
-into atomic factual claims and mark each as supported, contradicted or not
-supported by the supplied narrative/approved fields. The release reports:
+strata, random seed, sample count and exclusions. This implementation records a
+summary-level 1--5 factuality score, an all-claims-supported boolean and an
+exact-quote boolean for each reviewed draft. It does not claim to measure
+atomic-claim counts, material omissions, reviewer disagreement or adjudication;
+those require a future rubric extension. The reported quantities are:
 
-```text
-supported_claim_rate = supported_atomic_claims / reviewed_atomic_claims
-clean_summary_rate = reviewed_summaries_with_no_contradicted_or_unsupported_claim
-                     / reviewed_summaries
+```
+mean_factuality_score = sum(reviewed 1--5 scores) / reviewed summaries
+all_claims_supported_rate = summaries marked true / reviewed summaries
+exact_quote_rate = summaries with exact quotes / reviewed summaries
 ```
 
-It also reports quote correctness, material omissions, reviewer disagreement
-and adjudication status. An automated quote check does not substitute for this
-manual factuality sample. The sample result cannot be generalised beyond its
-documented selection frame.
+An automated quote check supports the reviewer but does not substitute for the
+manual sample. The result cannot be generalised beyond its documented
+selection frame.
 
 ### Private review worksheet
 
@@ -230,14 +242,18 @@ to export a sample with another status. Reviewers inspect narratives and drafts
 under approved private data controls; only completed review records may change
 the monitoring metrics.
 
-The companion `cfpb-triage import-summary-review` command requires the exact
-worksheet columns, requires every row's complaint ID and month/product stratum
-to match the frozen sample, and requires nonblank summary/reviewer IDs, a 1--5
-factuality score, and explicit boolean values. It validates all rows before
-writing `SummaryEvaluationStore` records, rejects narrative or extra columns,
-and leaves the frozen sample status unchanged. Imported rows with
+The companion `cfpb-triage build-summary-manifest` command creates a private
+ID-only manifest from the generated Luna pack. It stores each complaint ID,
+summary ID, model name and draft SHA-256, but never narrative text. The
+`cfpb-triage import-summary-review` command requires that manifest as well as
+the exact worksheet columns; every row's complaint ID, summary ID and
+month/product stratum must match the frozen sample and generated-draft
+manifest. It validates all rows before writing `SummaryEvaluationStore`
+records, rejects narrative or extra columns, and leaves the frozen sample
+status unchanged. Imported rows with
 `included_in_review_sample=false` remain stored for audit but are excluded from
-the reported factuality denominator.
+the reported factuality denominator. The review table records the private
+manifest hash and draft lineage; the manifest and worksheet remain local.
 
 ### Latest private review evidence
 
@@ -252,7 +268,9 @@ controls and imported without changing the source sample. The evidence is:
 The sample manifest SHA-256 is
 `c9e13f5d11a98a3e63e75f423a8fca512bca59d93f67b300d988ce27ed2c4a4c`, with parent
 snapshot SHA-256 `d393f6a83dc9c5248bf969ff6470c498b84397a46dfc93f7a229360d00db0864`.
-These measurements describe the documented frozen selection frame only; they do
+The private generated-draft manifest SHA-256 is
+`958a5580594f3740729190806fd71160ea82e3e4bab849f6a36a18989eafd3b1`, and all
+50 imported rows are bound to it. These measurements describe the documented frozen selection frame only; they do
 not generalise to all CFPB complaints. The public Vercel demonstration does not
 persist this private review store, so it correctly reports no runtime factuality
 sample.

@@ -1,0 +1,110 @@
+{
+  "as_of_date": "2026-08-19",
+  "canonical_request_sha256": "53f462d27811276886b12e64fe57896f6ff91e71fd1733cd7c655e68a5b9fd69",
+  "complete_months_requested": 8,
+  "extracted_at_utc": null,
+  "manifest_content_sha256": "a7f68aeecaa6be66496fd6db8aecf0ad46dc9a4037656f33ec2ced28d6c9d57e",
+  "privacy_note": "Row-level CFPB records, narratives and DuckDB files remain local and are not distributed.",
+  "records": {
+    "count": 10000,
+    "maximum_date_received": null,
+    "minimum_date_received": null,
+    "narrative_available_count": 437
+  },
+  "schema_version": "cfpb-snapshot-manifest-v1",
+  "snapshot_sha256": "d393f6a83dc9c5248bf969ff6470c498b84397a46dfc93f7a229360d00db0864",
+  "source": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/",
+  "status": "privacy_safe_metadata_only",
+  "windows": [
+    {
+      "complete_month": true,
+      "date_received_max_exclusive": "2026-01-01",
+      "date_received_min": "2025-12-01",
+      "name": "2025-12",
+      "retained_after_global_deduplication": 1111,
+      "selection_cap": 1111,
+      "source_total": 512476,
+      "source_total_relation": "eq"
+    },
+    {
+      "complete_month": true,
+      "date_received_max_exclusive": "2026-02-01",
+      "date_received_min": "2026-01-01",
+      "name": "2026-01",
+      "retained_after_global_deduplication": 1111,
+      "selection_cap": 1111,
+      "source_total": 541265,
+      "source_total_relation": "eq"
+    },
+    {
+      "complete_month": true,
+      "date_received_max_exclusive": "2026-03-01",
+      "date_received_min": "2026-02-01",
+      "name": "2026-02",
+      "retained_after_global_deduplication": 1111,
+      "selection_cap": 1111,
+      "source_total": 497106,
+      "source_total_relation": "eq"
+    },
+    {
+      "complete_month": true,
+      "date_received_max_exclusive": "2026-04-01",
+      "date_received_min": "2026-03-01",
+      "name": "2026-03",
+      "retained_after_global_deduplication": 1111,
+      "selection_cap": 1111,
+      "source_total": 614923,
+      "source_total_relation": "eq"
+    },
+    {
+      "complete_month": true,
+      "date_received_max_exclusive": "2026-05-01",
+      "date_received_min": "2026-04-01",
+      "name": "2026-04",
+      "retained_after_global_deduplication": 1111,
+      "selection_cap": 1111,
+      "source_total": 618233,
+      "source_total_relation": "eq"
+    },
+    {
+      "complete_month": true,
+      "date_received_max_exclusive": "2026-06-01",
+      "date_received_min": "2026-05-01",
+      "name": "2026-05",
+      "retained_after_global_deduplication": 1111,
+      "selection_cap": 1111,
+      "source_total": 619772,
+      "source_total_relation": "eq"
+    },
+    {
+      "complete_month": true,
+      "date_received_max_exclusive": "2026-07-01",
+      "date_received_min": "2026-06-01",
+      "name": "2026-06",
+      "retained_after_global_deduplication": 1111,
+      "selection_cap": 1111,
+      "source_total": 621849,
+      "source_total_relation": "eq"
+    },
+    {
+      "complete_month": true,
+      "date_received_max_exclusive": "2026-08-01",
+      "date_received_min": "2026-07-01",
+      "name": "2026-07",
+      "retained_after_global_deduplication": 1111,
+      "selection_cap": 1111,
+      "source_total": 694955,
+      "source_total_relation": "eq"
+    },
+    {
+      "complete_month": false,
+      "date_received_max_exclusive": "2026-08-20",
+      "date_received_min": "2026-08-01",
+      "name": "2026-08-current-slice",
+      "retained_after_global_deduplication": 1112,
+      "selection_cap": 1112,
+      "source_total": 344722,
+      "source_total_relation": "eq"
+    }
+  ]
+}

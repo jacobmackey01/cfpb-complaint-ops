@@ -11,8 +11,12 @@ and safe to publish. Examples include:
 - a model binary only after a specific text-disclosure review.
 
 The aggregate [summary factuality review metrics](summary_factuality_review_metrics.json)
-record the completed private human review of the frozen sample. They contain no
-narratives, generated summaries, complaint IDs or reviewer worksheet fields.
+record the completed private human review of the frozen sample. The
+[snapshot/QA bundle](../../data/manifests/snapshot_manifest.json), [router
+metrics](product_router_metrics.json), [anomaly lineage](anomaly_lineage.json)
+and [release provenance](release_provenance.json) bind the aggregate outputs to
+the code, request and snapshot hashes. These public files contain no narratives,
+generated summaries, complaint IDs, reviewer notes or worksheet fields.
 
 Each promoted artifact should include or accompany:
 

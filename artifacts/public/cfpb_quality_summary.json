@@ -1,0 +1,189 @@
+{
+  "artifact_sha256": "b015cbdec25a344307f53f4f7f8ac32d5d96e0847488a9c6838c1d5889142f7d",
+  "checks": [
+    {
+      "detail": "Every non-empty line must be a valid JSON object.",
+      "name": "parseable_json_lines",
+      "observed": 0,
+      "passed": true,
+      "severity": "critical",
+      "threshold": 0
+    },
+    {
+      "detail": "The reproducible snapshot is intentionally capped at 100,000 rows.",
+      "name": "row_count_within_snapshot_contract",
+      "observed": 10000,
+      "passed": true,
+      "severity": "critical",
+      "threshold": "1..100000"
+    },
+    {
+      "detail": "Every row must carry the required extraction schema.",
+      "name": "required_columns_present",
+      "observed": 0,
+      "passed": true,
+      "severity": "critical",
+      "threshold": 0
+    },
+    {
+      "detail": "Complaint ID is required for the canonical row grain.",
+      "name": "complaint_id_present",
+      "observed": 0,
+      "passed": true,
+      "severity": "critical",
+      "threshold": 0
+    },
+    {
+      "detail": "Complaint ID is the intended row grain and must be unique.",
+      "name": "complaint_id_unique",
+      "observed": 0,
+      "passed": true,
+      "severity": "critical",
+      "threshold": 0
+    },
+    {
+      "detail": "Chronological validation requires parseable received dates.",
+      "name": "date_received_valid",
+      "observed": 0,
+      "passed": true,
+      "severity": "high",
+      "threshold": 0
+    },
+    {
+      "detail": "Dates later than the declared as-of date 2026-08-21 are invalid.",
+      "name": "date_received_not_future",
+      "observed": 0,
+      "passed": true,
+      "severity": "high",
+      "threshold": 0
+    },
+    {
+      "detail": "Date sent to company cannot precede date received.",
+      "name": "date_sent_not_before_received",
+      "observed": 0,
+      "passed": true,
+      "severity": "high",
+      "threshold": 0
+    },
+    {
+      "detail": "Product and issue labels are required for supervised routing evaluation.",
+      "name": "routing_labels_present",
+      "observed": 0.0,
+      "passed": true,
+      "severity": "high",
+      "threshold": "<=0.001"
+    },
+    {
+      "detail": "has_narrative should agree with the normalized narrative field.",
+      "name": "narrative_flag_consistent",
+      "observed": 0.0,
+      "passed": true,
+      "severity": "medium",
+      "threshold": "<=0.001"
+    },
+    {
+      "detail": "Routing evaluation requires a sufficiently large narrative-bearing population; the model-level support gate remains authoritative.",
+      "name": "narrative_support_for_routing_evaluation",
+      "observed": 437,
+      "passed": false,
+      "severity": "medium",
+      "threshold": 500
+    },
+    {
+      "detail": "The QA input must match the rowset hash recorded by its manifest.",
+      "name": "manifest_snapshot_sha256_matches",
+      "observed": "d393f6a83dc9c5248bf969ff6470c498b84397a46dfc93f7a229360d00db0864",
+      "passed": true,
+      "severity": "critical",
+      "threshold": "d393f6a83dc9c5248bf969ff6470c498b84397a46dfc93f7a229360d00db0864"
+    },
+    {
+      "detail": "The CFPB source metadata must not report a data issue.",
+      "name": "source_reports_no_data_issue",
+      "observed": 0,
+      "passed": true,
+      "severity": "high",
+      "threshold": 0
+    },
+    {
+      "detail": "The CFPB source metadata must not report stale data.",
+      "name": "source_reports_fresh",
+      "observed": 0,
+      "passed": true,
+      "severity": "high",
+      "threshold": 0
+    }
+  ],
+  "code_commit_sha": "6c4652d2ce50739a296e43088e5c54cf2f9fab3b",
+  "column_profile": {
+    "company": {
+      "distinct_count_capped": false,
+      "distinct_count_observed": 332,
+      "null_count": 0,
+      "null_rate": 0.0
+    },
+    "complaint_id": {
+      "distinct_count_capped": false,
+      "distinct_count_observed": 10000,
+      "null_count": 0,
+      "null_rate": 0.0
+    },
+    "date_received": {
+      "distinct_count_capped": false,
+      "distinct_count_observed": 42,
+      "null_count": 0,
+      "null_rate": 0.0
+    },
+    "has_narrative": {
+      "distinct_count_capped": false,
+      "distinct_count_observed": 2,
+      "null_count": 0,
+      "null_rate": 0.0
+    },
+    "issue": {
+      "distinct_count_capped": false,
+      "distinct_count_observed": 65,
+      "null_count": 0,
+      "null_rate": 0.0
+    },
+    "narrative": {
+      "distinct_count_capped": false,
+      "distinct_count_observed": 405,
+      "null_count": 9563,
+      "null_rate": 0.9563
+    },
+    "product": {
+      "distinct_count_capped": false,
+      "distinct_count_observed": 11,
+      "null_count": 0,
+      "null_rate": 0.0
+    },
+    "routing": {
+      "minimum_narrative_eligible_count": 500,
+      "narrative_eligible_count": 437
+    },
+    "state": {
+      "distinct_count_capped": false,
+      "distinct_count_observed": 55,
+      "null_count": 9,
+      "null_rate": 0.0009
+    },
+    "submitted_via": {
+      "distinct_count_capped": false,
+      "distinct_count_observed": 4,
+      "null_count": 0,
+      "null_rate": 0.0
+    },
+    "timely": {
+      "distinct_count_capped": false,
+      "distinct_count_observed": 2,
+      "null_count": 0,
+      "null_rate": 0.0
+    }
+  },
+  "generated_at": "2026-08-23T20:00:14.104101Z",
+  "passed": true,
+  "row_count": 10000,
+  "schema_version": "cfpb-quality-summary-v1",
+  "snapshot_sha256": "d393f6a83dc9c5248bf969ff6470c498b84397a46dfc93f7a229360d00db0864"
+}

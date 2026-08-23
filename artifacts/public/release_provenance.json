@@ -1,0 +1,30 @@
+{
+  "artifact_hashes": {
+    "artifacts/public/anomaly_lineage.json": "8c086c38eb38601ba761b637ade7b024b4e8bc4bde9f79a46eba56841b36983a",
+    "artifacts/public/cfpb_quality_summary.json": "b0838eae48693b8cf339225af955e6756241a4321e03c80866b84d1a2ccde8e8",
+    "artifacts/public/product_router_metrics.json": "710de2d89b04b028877053e2919da061ab6aa83d5dd2f9bdd0aa4001bcfc0f29",
+    "artifacts/public/summary_factuality_review_metrics.json": "e2345a0433b05c23e1dca445f63e78406c1732857aef43f7ad29654efe23385e",
+    "data/manifests/snapshot_manifest.json": "b837bd5323debc6b1b8a4c2233a54655144b4639c5572b7645d1fb9800803123",
+    "data/requests/snapshot_request.json": "ed3e025f22664e2a64110d96a1e117ae69dd4dae87c7ad17f093d9b906b4e6be"
+  },
+  "canonical_request_sha256": "53f462d27811276886b12e64fe57896f6ff91e71fd1733cd7c655e68a5b9fd69",
+  "code_commit_sha": "6c4652d2ce50739a296e43088e5c54cf2f9fab3b",
+  "deployment": {
+    "api": "https://cfpb-complaint-ops-api.vercel.app",
+    "mode": "bounded_live_cfpb_read",
+    "persistence_mode": "disabled_public_writes",
+    "web": "https://cfpb-complaint-ops-web.vercel.app"
+  },
+  "generated_at": "2026-08-23T20:03:38.680231+00:00",
+  "manifest_content_sha256": "a7f68aeecaa6be66496fd6db8aecf0ad46dc9a4037656f33ec2ced28d6c9d57e",
+  "model_artifact_sha256": "0066143b7b0574a5d2b4831b0605706c1ebd3c091d14587e25d11a77afb54154",
+  "privacy_review": {
+    "narratives_published": false,
+    "private_review_worksheet_published": false,
+    "row_level_data_published": false
+  },
+  "release_artifact_sha256": "a75412d5349240f7715ca2c2132a73691ac1ee3fdcc69f8a144e6a83af5e5e6a",
+  "review_manifest_sha256": "958a5580594f3740729190806fd71160ea82e3e4bab849f6a36a18989eafd3b1",
+  "schema_version": "cfpb-release-provenance-v1",
+  "snapshot_sha256": "d393f6a83dc9c5248bf969ff6470c498b84397a46dfc93f7a229360d00db0864"
+}

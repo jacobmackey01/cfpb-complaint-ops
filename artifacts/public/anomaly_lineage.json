@@ -1,0 +1,28 @@
+{
+  "artifact_sha256": "d34c214150d45297360ed6dff8977f594eb9908e84ca66724b2f0f38a5804559",
+  "code_commit_sha": "6c4652d2ce50739a296e43088e5c54cf2f9fab3b",
+  "privacy_note": "Aggregate product/issue signals only; no complaint rows are included.",
+  "report": {
+    "as_of": "2026-08-21",
+    "cutoff_date": "2026-08-06",
+    "generated_at": "2026-08-23T20:00:03.111728+00:00",
+    "items": [],
+    "method": {
+      "baseline_window_days": 7,
+      "baseline_windows": 8,
+      "current_window_days": 7,
+      "dimensions_evaluated_separately": [
+        "product",
+        "issue"
+      ],
+      "minimum_current_count": 5,
+      "robust_z_threshold": 3.0,
+      "scale": "max(1.4826*MAD, sqrt(median+1), 1)"
+    },
+    "metric_basis": "weekly_stratified_monthly_capped_snapshot_sample",
+    "publication_lag_days": 15,
+    "snapshot_sha256": "d393f6a83dc9c5248bf969ff6470c498b84397a46dfc93f7a229360d00db0864"
+  },
+  "schema_version": "cfpb-anomaly-lineage-v1",
+  "snapshot_sha256": "d393f6a83dc9c5248bf969ff6470c498b84397a46dfc93f7a229360d00db0864"
+}

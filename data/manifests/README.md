@@ -5,7 +5,7 @@ request, downloaded pages, canonical rowset, QA report and code revision with
 SHA-256 values. The manifest contains no complaint rows, narratives, prompts or
 credentials.
 
-Before committing a generated manifest, review it for local paths and unsafe
-metadata. `snapshot_manifest.example.json` contains nulls intentionally and is
-not evidence of a completed run.
-
+The privacy-safe release [`snapshot_manifest.json`](snapshot_manifest.json)
+contains the verified rowset/request/QA hashes and aggregate window counts; the
+row-level snapshot remains ignored. The example manifest contains nulls
+intentionally and is not evidence of a completed run.

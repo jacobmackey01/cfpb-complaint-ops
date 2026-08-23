@@ -1,0 +1,1037 @@
+{
+  "artifact_sha256": "054c877cbb7cdf27a31385ed1b2d438e2b7553fcdb0627d02778abf852676777",
+  "code_commit_sha": "6c4652d2ce50739a296e43088e5c54cf2f9fab3b",
+  "model": {
+    "calibration": {
+      "known_label_rows": 32,
+      "negative_log_likelihood": 1.5423052237846002,
+      "unseen_label_rows": 0
+    },
+    "calibration_bins": [
+      {
+        "accuracy": 0.0,
+        "count": 2,
+        "lower": 0.1,
+        "mean_confidence": 0.19466643308256631,
+        "upper": 0.2
+      },
+      {
+        "accuracy": 0.4411764705882353,
+        "count": 34,
+        "lower": 0.2,
+        "mean_confidence": 0.2513759783050497,
+        "upper": 0.30000000000000004
+      },
+      {
+        "accuracy": 0.45,
+        "count": 20,
+        "lower": 0.30000000000000004,
+        "mean_confidence": 0.34111518689005516,
+        "upper": 0.4
+      },
+      {
+        "accuracy": 0.6,
+        "count": 15,
+        "lower": 0.4,
+        "mean_confidence": 0.470131516572758,
+        "upper": 0.5
+      },
+      {
+        "accuracy": 0.875,
+        "count": 8,
+        "lower": 0.5,
+        "mean_confidence": 0.5519874589310594,
+        "upper": 0.6000000000000001
+      },
+      {
+        "accuracy": 0.7777777777777778,
+        "count": 9,
+        "lower": 0.6000000000000001,
+        "mean_confidence": 0.6476359147164962,
+        "upper": 0.7000000000000001
+      },
+      {
+        "accuracy": 0.8,
+        "count": 10,
+        "lower": 0.7000000000000001,
+        "mean_confidence": 0.7494670423868267,
+        "upper": 0.8
+      },
+      {
+        "accuracy": 0.6666666666666666,
+        "count": 3,
+        "lower": 0.8,
+        "mean_confidence": 0.8595835117804681,
+        "upper": 0.9
+      },
+      {
+        "accuracy": 0.9090909090909091,
+        "count": 11,
+        "lower": 0.9,
+        "mean_confidence": 0.9401025162918697,
+        "upper": 1.0
+      }
+    ],
+    "drift": [
+      {
+        "actual_vs_train_psi": 0.06081011456643392,
+        "by_product": [
+          {
+            "absolute_actual_share_shift": 0.03240482550118877,
+            "actual_share": 0.08280254777070063,
+            "predicted_share": 0.08280254777070063,
+            "product": "Checking or savings account",
+            "psi_component": 0.010702391049008365,
+            "train_share": 0.1152073732718894
+          },
+          {
+            "absolute_actual_share_shift": 0.020341072529278817,
+            "actual_share": 0.07643312101910828,
+            "predicted_share": 0.07643312101910828,
+            "product": "Credit card",
+            "psi_component": 0.004799709777639491,
+            "train_share": 0.0967741935483871
+          },
+          {
+            "absolute_actual_share_shift": 0.09888755173324726,
+            "actual_share": 0.40764331210191085,
+            "predicted_share": 0.40764331210191085,
+            "product": "Credit reporting or other personal consumer reports",
+            "psi_component": 0.027475038657379824,
+            "train_share": 0.3087557603686636
+          },
+          {
+            "absolute_actual_share_shift": 0.021309695030673037,
+            "actual_share": 0.2229299363057325,
+            "predicted_share": 0.2229299363057325,
+            "product": "Debt collection",
+            "psi_component": 0.0019454028140901594,
+            "train_share": 0.24423963133640553
+          },
+          {
+            "absolute_actual_share_shift": 0.003522263641433562,
+            "actual_share": 0.012738853503184714,
+            "predicted_share": 0.012738853503184714,
+            "product": "Debt or credit management",
+            "psi_component": 0.0011398804226606728,
+            "train_share": 0.009216589861751152
+          },
+          {
+            "absolute_actual_share_shift": 0.011799583198802435,
+            "actual_share": 0.05732484076433121,
+            "predicted_share": 0.05732484076433121,
+            "product": "Money transfer, virtual currency, or money service",
+            "psi_component": 0.002208540941416428,
+            "train_share": 0.06912442396313365
+          },
+          {
+            "absolute_actual_share_shift": 0.00434412515776806,
+            "actual_share": 0.050955414012738856,
+            "predicted_share": 0.050955414012738856,
+            "product": "Mortgage",
+            "psi_component": 0.0003554016468110322,
+            "train_share": 0.055299539170506916
+          },
+          {
+            "absolute_actual_share_shift": 0.002436232351991547,
+            "actual_share": 0.025477707006369428,
+            "predicted_share": 0.025477707006369428,
+            "product": "Payday loan, title loan, personal loan, or advance loan",
+            "psi_component": 0.0002448507236814397,
+            "train_share": 0.02304147465437788
+          },
+          {
+            "absolute_actual_share_shift": 0.0006751005312747652,
+            "actual_share": 0.01910828025477707,
+            "predicted_share": 0.01910828025477707,
+            "product": "Prepaid card",
+            "psi_component": 2.4281718308266648e-05,
+            "train_share": 0.018433179723502304
+          },
+          {
+            "absolute_actual_share_shift": 0.01775807919222754,
+            "actual_share": 0.01910828025477707,
+            "predicted_share": 0.01910828025477707,
+            "product": "Student loan",
+            "psi_component": 0.011669766091756798,
+            "train_share": 0.03686635944700461
+          },
+          {
+            "absolute_actual_share_shift": 0.002436232351991547,
+            "actual_share": 0.025477707006369428,
+            "predicted_share": 0.025477707006369428,
+            "product": "Vehicle loan or lease",
+            "psi_component": 0.0002448507236814397,
+            "train_share": 0.02304147465437788
+          }
+        ],
+        "month": "2025-12",
+        "sample_size": 157
+      },
+      {
+        "actual_vs_train_psi": 0.9822221547472498,
+        "by_product": [
+          {
+            "absolute_actual_share_shift": 0.12721686915235303,
+            "actual_share": 0.24242424242424243,
+            "predicted_share": 0.24242424242424243,
+            "product": "Checking or savings account",
+            "psi_component": 0.09464311115994449,
+            "train_share": 0.1152073732718894
+          },
+          {
+            "absolute_actual_share_shift": 0.0058651026392961825,
+            "actual_share": 0.09090909090909091,
+            "predicted_share": 0.09090909090909091,
+            "product": "Credit card",
+            "psi_component": 0.000366684400714242,
+            "train_share": 0.0967741935483871
+          },
+          {
+            "absolute_actual_share_shift": 0.21784666945957268,
+            "actual_share": 0.09090909090909091,
+            "predicted_share": 0.09090909090909091,
+            "product": "Credit reporting or other personal consumer reports",
+            "psi_component": 0.26635737088615535,
+            "train_share": 0.3087557603686636
+          },
+          {
+            "absolute_actual_share_shift": 0.05879067169389751,
+            "actual_share": 0.30303030303030304,
+            "predicted_share": 0.30303030303030304,
+            "product": "Debt collection",
+            "psi_component": 0.0126801000687684,
+            "train_share": 0.24423963133640553
+          },
+          {
+            "absolute_actual_share_shift": 0.009216589861751152,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Debt or credit management",
+            "psi_component": 0.08413704036035079,
+            "train_share": 0.009216589861751152
+          },
+          {
+            "absolute_actual_share_shift": 0.021784666945957265,
+            "actual_share": 0.09090909090909091,
+            "predicted_share": 0.09090909090909091,
+            "product": "Money transfer, virtual currency, or money service",
+            "psi_component": 0.005967874937956599,
+            "train_share": 0.06912442396313365
+          },
+          {
+            "absolute_actual_share_shift": 0.005306521435553692,
+            "actual_share": 0.06060606060606061,
+            "predicted_share": 0.06060606060606061,
+            "product": "Mortgage",
+            "psi_component": 0.00048622987048161113,
+            "train_share": 0.055299539170506916
+          },
+          {
+            "absolute_actual_share_shift": 0.02304147465437788,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Payday loan, title loan, personal loan, or advance loan",
+            "psi_component": 0.2314537906893125,
+            "train_share": 0.02304147465437788
+          },
+          {
+            "absolute_actual_share_shift": 0.011869850579528,
+            "actual_share": 0.030303030303030304,
+            "predicted_share": 0.030303030303030304,
+            "product": "Prepaid card",
+            "psi_component": 0.0059001962658695286,
+            "train_share": 0.018433179723502304
+          },
+          {
+            "absolute_actual_share_shift": 0.0540427314620863,
+            "actual_share": 0.09090909090909091,
+            "predicted_share": 0.09090909090909091,
+            "product": "Student loan",
+            "psi_component": 0.04877596541838384,
+            "train_share": 0.03686635944700461
+          },
+          {
+            "absolute_actual_share_shift": 0.02304147465437788,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Vehicle loan or lease",
+            "psi_component": 0.2314537906893125,
+            "train_share": 0.02304147465437788
+          }
+        ],
+        "month": "2026-01",
+        "sample_size": 33
+      },
+      {
+        "actual_vs_train_psi": 4.355242720327611,
+        "by_product": [
+          {
+            "absolute_actual_share_shift": 0.03294077487625874,
+            "actual_share": 0.14814814814814814,
+            "predicted_share": 0.14814814814814814,
+            "product": "Checking or savings account",
+            "psi_component": 0.008283850333490876,
+            "train_share": 0.1152073732718894
+          },
+          {
+            "absolute_actual_share_shift": 0.12544802867383512,
+            "actual_share": 0.2222222222222222,
+            "predicted_share": 0.2222222222222222,
+            "product": "Credit card",
+            "psi_component": 0.10428390323037363,
+            "train_share": 0.0967741935483871
+          },
+          {
+            "absolute_actual_share_shift": 0.3087557603686636,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Credit reporting or other personal consumer reports",
+            "psi_component": 3.90276823592276,
+            "train_share": 0.3087557603686636
+          },
+          {
+            "absolute_actual_share_shift": 0.05205666495989075,
+            "actual_share": 0.2962962962962963,
+            "predicted_share": 0.2962962962962963,
+            "product": "Debt collection",
+            "psi_component": 0.010057836811692608,
+            "train_share": 0.24423963133640553
+          },
+          {
+            "absolute_actual_share_shift": 0.009216589861751152,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Debt or credit management",
+            "psi_component": 0.08413704036035079,
+            "train_share": 0.009216589861751152
+          },
+          {
+            "absolute_actual_share_shift": 0.04198668714797746,
+            "actual_share": 0.1111111111111111,
+            "predicted_share": 0.1111111111111111,
+            "product": "Money transfer, virtual currency, or money service",
+            "psi_component": 0.01992760004964638,
+            "train_share": 0.06912442396313365
+          },
+          {
+            "absolute_actual_share_shift": 0.018774534903567154,
+            "actual_share": 0.07407407407407407,
+            "predicted_share": 0.07407407407407407,
+            "product": "Mortgage",
+            "psi_component": 0.005487729621980391,
+            "train_share": 0.055299539170506916
+          },
+          {
+            "absolute_actual_share_shift": 0.013995562382659154,
+            "actual_share": 0.037037037037037035,
+            "predicted_share": 0.037037037037037035,
+            "product": "Payday loan, title loan, personal loan, or advance loan",
+            "psi_component": 0.006642380338914782,
+            "train_share": 0.02304147465437788
+          },
+          {
+            "absolute_actual_share_shift": 0.018433179723502304,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Prepaid card",
+            "psi_component": 0.18104998735617006,
+            "train_share": 0.018433179723502304
+          },
+          {
+            "absolute_actual_share_shift": 0.03720771462706946,
+            "actual_share": 0.07407407407407407,
+            "predicted_share": 0.07407407407407407,
+            "product": "Student loan",
+            "psi_component": 0.025961775963316638,
+            "train_share": 0.03686635944700461
+          },
+          {
+            "absolute_actual_share_shift": 0.013995562382659154,
+            "actual_share": 0.037037037037037035,
+            "predicted_share": 0.037037037037037035,
+            "product": "Vehicle loan or lease",
+            "psi_component": 0.006642380338914782,
+            "train_share": 0.02304147465437788
+          }
+        ],
+        "month": "2026-02",
+        "sample_size": 27
+      },
+      {
+        "actual_vs_train_psi": 4.604069084977155,
+        "by_product": [
+          {
+            "absolute_actual_share_shift": 0.1035426267281106,
+            "actual_share": 0.21875,
+            "predicted_share": 0.15625,
+            "product": "Checking or savings account",
+            "psi_component": 0.06639066937353635,
+            "train_share": 0.1152073732718894
+          },
+          {
+            "absolute_actual_share_shift": 0.028225806451612906,
+            "actual_share": 0.125,
+            "predicted_share": 0.0625,
+            "product": "Credit card",
+            "psi_component": 0.007223860023293516,
+            "train_share": 0.0967741935483871
+          },
+          {
+            "absolute_actual_share_shift": 0.3087557603686636,
+            "actual_share": 0.0,
+            "predicted_share": 0.21875,
+            "product": "Credit reporting or other personal consumer reports",
+            "psi_component": 3.90276823592276,
+            "train_share": 0.3087557603686636
+          },
+          {
+            "absolute_actual_share_shift": 0.03701036866359447,
+            "actual_share": 0.28125,
+            "predicted_share": 0.28125,
+            "product": "Debt collection",
+            "psi_component": 0.005221925254306715,
+            "train_share": 0.24423963133640553
+          },
+          {
+            "absolute_actual_share_shift": 0.022033410138248846,
+            "actual_share": 0.03125,
+            "predicted_share": 0.0625,
+            "product": "Debt or credit management",
+            "psi_component": 0.026901422762073468,
+            "train_share": 0.009216589861751152
+          },
+          {
+            "absolute_actual_share_shift": 0.024625576036866353,
+            "actual_share": 0.09375,
+            "predicted_share": 0.0625,
+            "product": "Money transfer, virtual currency, or money service",
+            "psi_component": 0.007503899086779936,
+            "train_share": 0.06912442396313365
+          },
+          {
+            "absolute_actual_share_shift": 0.10095046082949308,
+            "actual_share": 0.15625,
+            "predicted_share": 0.125,
+            "product": "Mortgage",
+            "psi_component": 0.10485532865319143,
+            "train_share": 0.055299539170506916
+          },
+          {
+            "absolute_actual_share_shift": 0.02304147465437788,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Payday loan, title loan, personal loan, or advance loan",
+            "psi_component": 0.2314537906893125,
+            "train_share": 0.02304147465437788
+          },
+          {
+            "absolute_actual_share_shift": 0.012816820276497696,
+            "actual_share": 0.03125,
+            "predicted_share": 0.0,
+            "product": "Prepaid card",
+            "psi_component": 0.006765292455594684,
+            "train_share": 0.018433179723502304
+          },
+          {
+            "absolute_actual_share_shift": 0.025633640552995392,
+            "actual_share": 0.0625,
+            "predicted_share": 0.03125,
+            "product": "Student loan",
+            "psi_component": 0.013530870066994261,
+            "train_share": 0.03686635944700461
+          },
+          {
+            "absolute_actual_share_shift": 0.02304147465437788,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Vehicle loan or lease",
+            "psi_component": 0.2314537906893125,
+            "train_share": 0.02304147465437788
+          }
+        ],
+        "month": "2026-03",
+        "sample_size": 32
+      },
+      {
+        "actual_vs_train_psi": 1.0210092641205815,
+        "by_product": [
+          {
+            "absolute_actual_share_shift": 0.02432751044904083,
+            "actual_share": 0.13953488372093023,
+            "predicted_share": 0.16279069767441862,
+            "product": "Checking or savings account",
+            "psi_component": 0.004660649098380423,
+            "train_share": 0.1152073732718894
+          },
+          {
+            "absolute_actual_share_shift": 0.019504876219054765,
+            "actual_share": 0.11627906976744186,
+            "predicted_share": 0.023255813953488372,
+            "product": "Credit card",
+            "psi_component": 0.0035813094225483097,
+            "train_share": 0.0967741935483871
+          },
+          {
+            "absolute_actual_share_shift": 0.2157325045547101,
+            "actual_share": 0.09302325581395349,
+            "predicted_share": 0.18604651162790697,
+            "product": "Credit reporting or other personal consumer reports",
+            "psi_component": 0.25881288545558284,
+            "train_share": 0.3087557603686636
+          },
+          {
+            "absolute_actual_share_shift": 0.10459757796592006,
+            "actual_share": 0.3488372093023256,
+            "predicted_share": 0.2558139534883721,
+            "product": "Debt collection",
+            "psi_component": 0.03728425619792337,
+            "train_share": 0.24423963133640553
+          },
+          {
+            "absolute_actual_share_shift": 0.009216589861751152,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Debt or credit management",
+            "psi_component": 0.08413704036035079,
+            "train_share": 0.009216589861751152
+          },
+          {
+            "absolute_actual_share_shift": 0.045868610009645275,
+            "actual_share": 0.023255813953488372,
+            "predicted_share": 0.046511627906976744,
+            "product": "Money transfer, virtual currency, or money service",
+            "psi_component": 0.04996579748767502,
+            "train_share": 0.06912442396313365
+          },
+          {
+            "absolute_actual_share_shift": 0.1074911585039117,
+            "actual_share": 0.16279069767441862,
+            "predicted_share": 0.09302325581395349,
+            "product": "Mortgage",
+            "psi_component": 0.11605699958986194,
+            "train_share": 0.055299539170506916
+          },
+          {
+            "absolute_actual_share_shift": 0.02304147465437788,
+            "actual_share": 0.0,
+            "predicted_share": 0.06976744186046512,
+            "product": "Payday loan, title loan, personal loan, or advance loan",
+            "psi_component": 0.2314537906893125,
+            "train_share": 0.02304147465437788
+          },
+          {
+            "absolute_actual_share_shift": 0.018433179723502304,
+            "actual_share": 0.0,
+            "predicted_share": 0.06976744186046512,
+            "product": "Prepaid card",
+            "psi_component": 0.18104998735617006,
+            "train_share": 0.018433179723502304
+          },
+          {
+            "absolute_actual_share_shift": 0.009645268459972135,
+            "actual_share": 0.046511627906976744,
+            "predicted_share": 0.06976744186046512,
+            "product": "Student loan",
+            "psi_component": 0.0022415338835857345,
+            "train_share": 0.03686635944700461
+          },
+          {
+            "absolute_actual_share_shift": 0.04672596720608724,
+            "actual_share": 0.06976744186046512,
+            "predicted_share": 0.023255813953488372,
+            "product": "Vehicle loan or lease",
+            "psi_component": 0.05176501457919047,
+            "train_share": 0.02304147465437788
+          }
+        ],
+        "month": "2026-04",
+        "sample_size": 43
+      },
+      {
+        "actual_vs_train_psi": 0.8378113146244482,
+        "by_product": [
+          {
+            "absolute_actual_share_shift": 0.05552433404518378,
+            "actual_share": 0.17073170731707318,
+            "predicted_share": 0.14634146341463414,
+            "product": "Checking or savings account",
+            "psi_component": 0.021840873706215572,
+            "train_share": 0.1152073732718894
+          },
+          {
+            "absolute_actual_share_shift": 0.023603461841070025,
+            "actual_share": 0.07317073170731707,
+            "predicted_share": 0.024390243902439025,
+            "product": "Credit card",
+            "psi_component": 0.006599091949468791,
+            "train_share": 0.0967741935483871
+          },
+          {
+            "absolute_actual_share_shift": 0.2355850286613465,
+            "actual_share": 0.07317073170731707,
+            "predicted_share": 0.17073170731707318,
+            "product": "Credit reporting or other personal consumer reports",
+            "psi_component": 0.33918227665227163,
+            "train_share": 0.3087557603686636
+          },
+          {
+            "absolute_actual_share_shift": 0.14600427110261888,
+            "actual_share": 0.3902439024390244,
+            "predicted_share": 0.4634146341463415,
+            "product": "Debt collection",
+            "psi_component": 0.06842060382515273,
+            "train_share": 0.24423963133640553
+          },
+          {
+            "absolute_actual_share_shift": 0.0395638979431269,
+            "actual_share": 0.04878048780487805,
+            "predicted_share": 0.024390243902439025,
+            "product": "Debt or credit management",
+            "psi_component": 0.06592284218996612,
+            "train_share": 0.009216589861751152
+          },
+          {
+            "absolute_actual_share_shift": 0.04473418006069462,
+            "actual_share": 0.024390243902439025,
+            "predicted_share": 0.04878048780487805,
+            "product": "Money transfer, virtual currency, or money service",
+            "psi_component": 0.046599522974495586,
+            "train_share": 0.06912442396313365
+          },
+          {
+            "absolute_actual_share_shift": 0.0666516803416882,
+            "actual_share": 0.12195121951219512,
+            "predicted_share": 0.07317073170731707,
+            "product": "Mortgage",
+            "psi_component": 0.052711259200104346,
+            "train_share": 0.055299539170506916
+          },
+          {
+            "absolute_actual_share_shift": 0.0013487692480611442,
+            "actual_share": 0.024390243902439025,
+            "predicted_share": 0.0,
+            "product": "Payday loan, title loan, personal loan, or advance loan",
+            "psi_component": 7.672470428682986e-05,
+            "train_share": 0.02304147465437788
+          },
+          {
+            "absolute_actual_share_shift": 0.005957064178936721,
+            "actual_share": 0.024390243902439025,
+            "predicted_share": 0.0,
+            "product": "Prepaid card",
+            "psi_component": 0.001668083269237372,
+            "train_share": 0.018433179723502304
+          },
+          {
+            "absolute_actual_share_shift": 0.011914128357873442,
+            "actual_share": 0.04878048780487805,
+            "predicted_share": 0.04878048780487805,
+            "product": "Student loan",
+            "psi_component": 0.0033362454639367894,
+            "train_share": 0.03686635944700461
+          },
+          {
+            "absolute_actual_share_shift": 0.02304147465437788,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Vehicle loan or lease",
+            "psi_component": 0.2314537906893125,
+            "train_share": 0.02304147465437788
+          }
+        ],
+        "month": "2026-05",
+        "sample_size": 41
+      },
+      {
+        "actual_vs_train_psi": 0.8344818484020202,
+        "by_product": [
+          {
+            "absolute_actual_share_shift": 0.08176232369780756,
+            "actual_share": 0.19696969696969696,
+            "predicted_share": 0.22727272727272727,
+            "product": "Checking or savings account",
+            "psi_component": 0.04385015958495145,
+            "train_share": 0.1152073732718894
+          },
+          {
+            "absolute_actual_share_shift": 0.11534701857282503,
+            "actual_share": 0.21212121212121213,
+            "predicted_share": 0.07575757575757576,
+            "product": "Credit card",
+            "psi_component": 0.09052109712537848,
+            "train_share": 0.0967741935483871
+          },
+          {
+            "absolute_actual_share_shift": 0.2784527300656333,
+            "actual_share": 0.030303030303030304,
+            "predicted_share": 0.09090909090909091,
+            "product": "Credit reporting or other personal consumer reports",
+            "psi_component": 0.6463648226399143,
+            "train_share": 0.3087557603686636
+          },
+          {
+            "absolute_actual_share_shift": 0.043639156542382374,
+            "actual_share": 0.2878787878787879,
+            "predicted_share": 0.3787878787878788,
+            "product": "Debt collection",
+            "psi_component": 0.007173799769379675,
+            "train_share": 0.24423963133640553
+          },
+          {
+            "absolute_actual_share_shift": 0.005934925289764,
+            "actual_share": 0.015151515151515152,
+            "predicted_share": 0.0,
+            "product": "Debt or credit management",
+            "psi_component": 0.0029499720322762276,
+            "train_share": 0.009216589861751152
+          },
+          {
+            "absolute_actual_share_shift": 0.021784666945957265,
+            "actual_share": 0.09090909090909091,
+            "predicted_share": 0.09090909090909091,
+            "product": "Money transfer, virtual currency, or money service",
+            "psi_component": 0.005967874937956599,
+            "train_share": 0.06912442396313365
+          },
+          {
+            "absolute_actual_share_shift": 0.005306521435553692,
+            "actual_share": 0.06060606060606061,
+            "predicted_share": 0.045454545454545456,
+            "product": "Mortgage",
+            "psi_component": 0.00048622987048161113,
+            "train_share": 0.055299539170506916
+          },
+          {
+            "absolute_actual_share_shift": 0.007261555648652423,
+            "actual_share": 0.030303030303030304,
+            "predicted_share": 0.0,
+            "product": "Payday loan, title loan, personal loan, or advance loan",
+            "psi_component": 0.0019892413017639256,
+            "train_share": 0.02304147465437788
+          },
+          {
+            "absolute_actual_share_shift": 0.003281664571987152,
+            "actual_share": 0.015151515151515152,
+            "predicted_share": 0.030303030303030304,
+            "product": "Prepaid card",
+            "psi_component": 0.0006433375237171689,
+            "train_share": 0.018433179723502304
+          },
+          {
+            "absolute_actual_share_shift": 0.021714844295489456,
+            "actual_share": 0.015151515151515152,
+            "predicted_share": 0.030303030303030304,
+            "product": "Student loan",
+            "psi_component": 0.01930797219099868,
+            "train_share": 0.03686635944700461
+          },
+          {
+            "absolute_actual_share_shift": 0.022413070800167575,
+            "actual_share": 0.045454545454545456,
+            "predicted_share": 0.030303030303030304,
+            "product": "Vehicle loan or lease",
+            "psi_component": 0.015227341425202044,
+            "train_share": 0.02304147465437788
+          }
+        ],
+        "month": "2026-06",
+        "sample_size": 66
+      },
+      {
+        "actual_vs_train_psi": 6.173377560988912,
+        "by_product": [
+          {
+            "absolute_actual_share_shift": 0.08479262672811061,
+            "actual_share": 0.2,
+            "predicted_share": 0.0,
+            "product": "Checking or savings account",
+            "psi_component": 0.04676991164629154,
+            "train_share": 0.1152073732718894
+          },
+          {
+            "absolute_actual_share_shift": 0.10322580645161292,
+            "actual_share": 0.2,
+            "predicted_share": 0.0,
+            "product": "Credit card",
+            "psi_component": 0.0749348820738572,
+            "train_share": 0.0967741935483871
+          },
+          {
+            "absolute_actual_share_shift": 0.3087557603686636,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Credit reporting or other personal consumer reports",
+            "psi_component": 3.90276823592276,
+            "train_share": 0.3087557603686636
+          },
+          {
+            "absolute_actual_share_shift": 0.1557603686635945,
+            "actual_share": 0.4,
+            "predicted_share": 0.6,
+            "product": "Debt collection",
+            "psi_component": 0.07683863246893,
+            "train_share": 0.24423963133640553
+          },
+          {
+            "absolute_actual_share_shift": 0.009216589861751152,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Debt or credit management",
+            "psi_component": 0.08413704036035079,
+            "train_share": 0.009216589861751152
+          },
+          {
+            "absolute_actual_share_shift": 0.06912442396313365,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Money transfer, virtual currency, or money service",
+            "psi_component": 0.7703003137388054,
+            "train_share": 0.06912442396313365
+          },
+          {
+            "absolute_actual_share_shift": 0.1447004608294931,
+            "actual_share": 0.2,
+            "predicted_share": 0.2,
+            "product": "Mortgage",
+            "psi_component": 0.18601818818189514,
+            "train_share": 0.055299539170506916
+          },
+          {
+            "absolute_actual_share_shift": 0.02304147465437788,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Payday loan, title loan, personal loan, or advance loan",
+            "psi_component": 0.2314537906893125,
+            "train_share": 0.02304147465437788
+          },
+          {
+            "absolute_actual_share_shift": 0.018433179723502304,
+            "actual_share": 0.0,
+            "predicted_share": 0.2,
+            "product": "Prepaid card",
+            "psi_component": 0.18104998735617006,
+            "train_share": 0.018433179723502304
+          },
+          {
+            "absolute_actual_share_shift": 0.03686635944700461,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Student loan",
+            "psi_component": 0.3876527878612267,
+            "train_share": 0.03686635944700461
+          },
+          {
+            "absolute_actual_share_shift": 0.02304147465437788,
+            "actual_share": 0.0,
+            "predicted_share": 0.0,
+            "product": "Vehicle loan or lease",
+            "psi_component": 0.2314537906893125,
+            "train_share": 0.02304147465437788
+          }
+        ],
+        "month": "2026-07",
+        "sample_size": 5
+      }
+    ],
+    "duplicate_grouping": {
+      "excluded_duplicate_rows": 33,
+      "input_rows": 437,
+      "method": "normalized_narrative_sha256_keep_earliest",
+      "unique_narrative_groups": 404
+    },
+    "estimator": "word_tfidf_1_2gram_plus_sgd_log_loss",
+    "evaluation_gate": {
+      "minimum_test_rows": 50,
+      "minimum_test_rows_per_class": 2,
+      "test_month_count": 3
+    },
+    "false_routes": [
+      {
+        "actual": "Debt collection",
+        "count": 5,
+        "predicted": "Credit reporting or other personal consumer reports"
+      },
+      {
+        "actual": "Credit card",
+        "count": 5,
+        "predicted": "Debt collection"
+      },
+      {
+        "actual": "Checking or savings account",
+        "count": 3,
+        "predicted": "Money transfer, virtual currency, or money service"
+      },
+      {
+        "actual": "Credit card",
+        "count": 3,
+        "predicted": "Checking or savings account"
+      },
+      {
+        "actual": "Mortgage",
+        "count": 2,
+        "predicted": "Debt collection"
+      },
+      {
+        "actual": "Checking or savings account",
+        "count": 2,
+        "predicted": "Credit reporting or other personal consumer reports"
+      },
+      {
+        "actual": "Debt or credit management",
+        "count": 2,
+        "predicted": "Mortgage"
+      },
+      {
+        "actual": "Prepaid card",
+        "count": 2,
+        "predicted": "Checking or savings account"
+      },
+      {
+        "actual": "Payday loan, title loan, personal loan, or advance loan",
+        "count": 2,
+        "predicted": "Debt collection"
+      },
+      {
+        "actual": "Credit card",
+        "count": 2,
+        "predicted": "Credit reporting or other personal consumer reports"
+      },
+      {
+        "actual": "Student loan",
+        "count": 1,
+        "predicted": "Debt collection"
+      },
+      {
+        "actual": "Debt or credit management",
+        "count": 1,
+        "predicted": "Debt collection"
+      },
+      {
+        "actual": "Mortgage",
+        "count": 1,
+        "predicted": "Student loan"
+      },
+      {
+        "actual": "Mortgage",
+        "count": 1,
+        "predicted": "Debt or credit management"
+      },
+      {
+        "actual": "Credit reporting or other personal consumer reports",
+        "count": 1,
+        "predicted": "Student loan"
+      },
+      {
+        "actual": "Money transfer, virtual currency, or money service",
+        "count": 1,
+        "predicted": "Checking or savings account"
+      },
+      {
+        "actual": "Vehicle loan or lease",
+        "count": 1,
+        "predicted": "Debt collection"
+      },
+      {
+        "actual": "Checking or savings account",
+        "count": 1,
+        "predicted": "Debt collection"
+      },
+      {
+        "actual": "Credit card",
+        "count": 1,
+        "predicted": "Money transfer, virtual currency, or money service"
+      },
+      {
+        "actual": "Credit card",
+        "count": 1,
+        "predicted": "Prepaid card"
+      }
+    ],
+    "generated_at": "2026-08-23T19:59:41.040893+00:00",
+    "integrity": {
+      "abstained_cases_require_human_review": true,
+      "current_partial_month_excluded_from_training_and_evaluation": true,
+      "duplicate_narratives_grouped_across_splits": true,
+      "evaluation_unavailable_below_support_gate": true,
+      "final_decisions_by_ai": false,
+      "test_month_used_for_threshold_selection": false
+    },
+    "metric_basis": "weekly_stratified_monthly_capped_snapshot_sample",
+    "metrics": {
+      "abstention_rate": 0.0,
+      "accepted_rows": 112,
+      "accuracy": 0.5982142857142857,
+      "brier": 0.5867730919663868,
+      "coverage": 1.0,
+      "ece": 0.1441862321802476,
+      "macro_f1": 0.39590017825311946,
+      "selective_accuracy": 0.5982142857142857,
+      "selective_macro_f1": 0.39590017825311946,
+      "test_rows": 112
+    },
+    "model_artifact_sha256": "0066143b7b0574a5d2b4831b0605706c1ebd3c091d14587e25d11a77afb54154",
+    "model_version": "product-router-6ba4745e208a",
+    "schema_version": "1.0.0",
+    "snapshot_sha256": "d393f6a83dc9c5248bf969ff6470c498b84397a46dfc93f7a229360d00db0864",
+    "split": {
+      "calibration_month": "2026-03",
+      "calibration_rows": 32,
+      "split_policy": "complete months are ordered; calibration and threshold precede the configured multi-month frozen test window",
+      "test_month": "2026-07",
+      "test_months": [
+        "2026-05",
+        "2026-06",
+        "2026-07"
+      ],
+      "test_rows": 112,
+      "threshold_month": "2026-04",
+      "threshold_rows": 43,
+      "train_months": [
+        "2025-12",
+        "2026-01",
+        "2026-02"
+      ],
+      "train_rows": 217
+    },
+    "status": "available",
+    "support_gate": {
+      "minimum_test_rows": 50,
+      "minimum_test_rows_per_class": 2,
+      "observed_class_support": {
+        "Checking or savings account": 21,
+        "Credit card": 18,
+        "Credit reporting or other personal consumer reports": 5,
+        "Debt collection": 37,
+        "Debt or credit management": 3,
+        "Money transfer, virtual currency, or money service": 7,
+        "Mortgage": 10,
+        "Payday loan, title loan, personal loan, or advance loan": 3,
+        "Prepaid card": 2,
+        "Student loan": 3,
+        "Vehicle loan or lease": 3
+      },
+      "observed_test_rows": 112,
+      "passed": true
+    },
+    "target": "product",
+    "temperature": 1.8025009252216608,
+    "threshold": 0.1593283983391081,
+    "threshold_selection": {
+      "accuracy": 0.6046511627906976,
+      "coverage": 1.0,
+      "minimum_coverage": 0.5,
+      "selection_rule": "fallback maximum accuracy-times-coverage; target was not feasible",
+      "target_selective_accuracy": 0.8,
+      "threshold": 0.1593283983391081
+    },
+    "unseen_labels": {
+      "labels": [],
+      "rate": 0.0,
+      "row_count": 0
+    }
+  },
+  "privacy_note": "Aggregate routing evidence only; no narrative text or complaint-level predictions are included.",
+  "schema_version": "cfpb-product-router-metrics-v2",
+  "snapshot_sha256": "d393f6a83dc9c5248bf969ff6470c498b84397a46dfc93f7a229360d00db0864"
+}

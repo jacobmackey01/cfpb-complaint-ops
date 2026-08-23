@@ -300,7 +300,7 @@ Capture these values for each public release:
 Git repository:
 https://github.com/jacobmackey01/cfpb-complaint-ops
 Git commit SHA:
-316ce2e9ba142dfa01153db1ba9eb6580a33db7e
+6c4652d2ce50739a296e43088e5c54cf2f9fab3b
 CI run URL/status:
 https://github.com/jacobmackey01/cfpb-complaint-ops/actions/runs/32543386111 (all checks passed)
 Snapshot or demo artifact ID:
@@ -319,7 +319,7 @@ Deployment verification timestamp (UTC):
 Verifier:
 Automated HTTPS checks plus authenticated Vercel deployment status
 Known limitations:
-Snapshot is 10,000 rows rather than the 100,000 maximum; live reads are bounded to 25 records, complaint data are not representative, and company counts are not comparative performance. The private frozen summary review is complete (`n=50`; mean factuality 4.86, all-claims-supported rate 0.90, exact-quote rate 1.0) for sample manifest `c9e13f5d11a98a3e63e75f423a8fca512bca59d93f67b300d988ce27ed2c4a4c`. The public Vercel live-read demo intentionally does not persist private worksheets or narratives, so its runtime summary metrics remain unavailable (`n=0`).
+Snapshot is 10,000 rows rather than the 100,000 maximum; live reads are bounded to 25 records, complaint data are not representative, and company counts are not comparative performance. The private frozen summary review is complete (`n=50`; mean factuality 4.86, all-claims-supported rate 0.90, exact-quote rate 1.0) for sample manifest `c9e13f5d11a98a3e63e75f423a8fca512bca59d93f67b300d988ce27ed2c4a4c`, bound to private generated-draft manifest `958a5580594f3740729190806fd71160ea82e3e4bab849f6a36a18989eafd3b1`. The public Vercel live-read demo intentionally disables shared writes and does not persist private worksheets or narratives, so its runtime summary metrics remain unavailable (`n=0`).
 Rollback target:
 ```
 

@@ -38,8 +38,11 @@ endpoints listed in the deployment runbook; it is not a production case system.
 The frozen 50-case summary sample was manually reviewed with AI assistance under
 private local controls. The public aggregate record reports a mean factuality
 score of **4.86/5**, an all-claims-supported rate of **0.90**, and an exact-quote
-rate of **1.0**. The [aggregate artifact](artifacts/public/summary_factuality_review_metrics.json)
-and [evaluation notes](docs/metrics-and-evaluation.md) are public; narratives,
+rate of **1.0**. The [aggregate artifact](artifacts/public/summary_factuality_review_metrics.json),
+[release provenance](artifacts/public/release_provenance.json), [snapshot
+manifest](data/manifests/snapshot_manifest.json), [QA summary](artifacts/public/cfpb_quality_summary.json),
+[router metrics](artifacts/public/product_router_metrics.json) and [evaluation
+notes](docs/metrics-and-evaluation.md) are public; narratives,
 generated drafts and the row-level worksheet remain private. These results are
 for the documented frozen selection frame, not a representative population or a
 comparative company-performance claim.
@@ -110,14 +113,17 @@ docker-compose.yml       Local full-stack runtime
 ```
 
 The public demonstration is deployed as two Vercel projects from the verified
-application release SHA (`316ce2e`):
+application code release SHA (`6c4652d`):
 
 - API: <https://cfpb-complaint-ops-api.vercel.app>
 - Interface: <https://cfpb-complaint-ops-web.vercel.app>
 
 The API performs a bounded live CFPB read of at most 25 current records per
-request and returns `source_kind=cfpb_public`. Live cases have no trained
-router, remain abstained and require human review; review state is ephemeral.
+request and returns `data_mode=bounded_live_cfpb_read`. Live cases have no
+trained router, remain abstained and require human review. Public route writes
+are disabled (`persistence_mode=disabled_public_writes`) rather than stored in
+shared process memory; a durable workflow requires authentication and a
+transactional store.
 Public LLM generation is disabled, and no OpenAI key is shipped to the browser.
 See the [deployment runbook](docs/deployment-runbook.md) for release gates and
 cross-origin verification.

@@ -1,0 +1,85 @@
+{
+  "api_url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/",
+  "as_of_date": "2026-08-19",
+  "canonical_request_plan": {
+    "date_semantics": {
+      "date_received_max": "exclusive",
+      "date_received_min": "inclusive"
+    },
+    "endpoint": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/",
+    "fixed_parameters": {
+      "no_aggs": "true",
+      "no_highlight": "true",
+      "sort": "created_date_desc"
+    },
+    "http_method": "GET",
+    "pagination": {
+      "offset_parameter": "frm",
+      "page_size_max": 100,
+      "page_size_parameter": "size"
+    },
+    "response_format": "default_json",
+    "windows": [
+      {
+        "date_received_max_exclusive": "2026-01-01",
+        "date_received_min": "2025-12-01",
+        "name": "2025-12",
+        "selection_cap": 1111
+      },
+      {
+        "date_received_max_exclusive": "2026-02-01",
+        "date_received_min": "2026-01-01",
+        "name": "2026-01",
+        "selection_cap": 1111
+      },
+      {
+        "date_received_max_exclusive": "2026-03-01",
+        "date_received_min": "2026-02-01",
+        "name": "2026-02",
+        "selection_cap": 1111
+      },
+      {
+        "date_received_max_exclusive": "2026-04-01",
+        "date_received_min": "2026-03-01",
+        "name": "2026-03",
+        "selection_cap": 1111
+      },
+      {
+        "date_received_max_exclusive": "2026-05-01",
+        "date_received_min": "2026-04-01",
+        "name": "2026-04",
+        "selection_cap": 1111
+      },
+      {
+        "date_received_max_exclusive": "2026-06-01",
+        "date_received_min": "2026-05-01",
+        "name": "2026-05",
+        "selection_cap": 1111
+      },
+      {
+        "date_received_max_exclusive": "2026-07-01",
+        "date_received_min": "2026-06-01",
+        "name": "2026-06",
+        "selection_cap": 1111
+      },
+      {
+        "date_received_max_exclusive": "2026-08-01",
+        "date_received_min": "2026-07-01",
+        "name": "2026-07",
+        "selection_cap": 1111
+      },
+      {
+        "date_received_max_exclusive": "2026-08-20",
+        "date_received_min": "2026-08-01",
+        "name": "2026-08-current-slice",
+        "selection_cap": 1112
+      }
+    ]
+  },
+  "canonical_request_sha256": "53f462d27811276886b12e64fe57896f6ff91e71fd1733cd7c655e68a5b9fd69",
+  "complete_months_requested": 8,
+  "max_records": 10000,
+  "privacy_note": "Request metadata only; no complaint rows or narratives are distributed.",
+  "schema_version": "cfpb-snapshot-request-v1",
+  "source": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/"
+}

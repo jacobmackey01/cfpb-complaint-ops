@@ -87,7 +87,7 @@ def contains_prompt_injection_signal(narrative: str) -> bool:
 def normalize_exact_quotes(
     payload: LLMSummaryPayload, narrative: str
 ) -> LLMSummaryPayload:
-    """Repair model offsets only when each quote text occurs exactly once."""
+    """Repair unique offsets; require valid provider offsets for duplicates."""
 
     normalized: list[EvidenceQuote] = []
     for quote in payload.evidence_quotes:
@@ -99,14 +99,25 @@ def normalize_exact_quotes(
                 break
             positions.append(position)
             cursor = position + 1
-        if len(positions) != 1:
+        if not positions:
             raise SummaryGroundingError(
-                "evidence quote text must occur exactly once in the supplied narrative"
+                "evidence quote text was not found in the supplied narrative"
             )
-        start = positions[0]
-        normalized.append(
-            quote.model_copy(update={"start": start, "end": start + len(quote.text)})
-        )
+        if len(positions) == 1:
+            start = positions[0]
+            end = start + len(quote.text)
+        else:
+            start = quote.start
+            end = quote.end
+            if (
+                end <= start
+                or end > len(narrative)
+                or narrative[start:end] != quote.text
+            ):
+                raise SummaryGroundingError(
+                    "duplicate evidence quote text requires an exact provider offset"
+                )
+        normalized.append(quote.model_copy(update={"start": start, "end": end}))
     return payload.model_copy(update={"evidence_quotes": normalized})
 
 

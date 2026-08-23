@@ -257,6 +257,20 @@ def test_unique_exact_quote_text_repairs_reversed_model_offsets() -> None:
     validate_exact_quotes(normalized, NARRATIVE)
 
 
+def test_duplicate_quote_text_uses_valid_provider_offsets() -> None:
+    narrative = "The charge remains. A second charge remains."
+    quote_text = "charge"
+    start = narrative.rfind(quote_text)
+    payload = _payload()
+    payload.evidence_quotes = [
+        EvidenceQuote(text=quote_text, start=start, end=start + len(quote_text))
+    ]
+    normalized = normalize_exact_quotes(payload, narrative)
+    assert normalized.evidence_quotes[0].start == start
+    assert normalized.evidence_quotes[0].end == start + len(quote_text)
+    validate_exact_quotes(normalized, narrative)
+
+
 def test_ambiguous_or_altered_quote_text_fails_closed() -> None:
     payload = _payload()
     payload.evidence_quotes = [EvidenceQuote(text="charge", start=1, end=2)]

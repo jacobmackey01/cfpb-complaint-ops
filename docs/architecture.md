@@ -168,11 +168,11 @@ the complete application path but remains a single-user/local-data design.
 The public demonstration uses two Vercel projects built from the same pushed
 Git commit:
 
-- the repository-root project serves FastAPI in `PUBLIC_DEMO_MODE=true`; and
+- the repository-root project serves FastAPI with `CFPB_LIVE_READ_MODE=true` and `PUBLIC_DEMO_MODE=false`; and
 - the `frontend/` project builds the static Vite interface and points
   `VITE_API_BASE_URL` at the backend project's HTTPS origin.
 
-The serverless backend uses synthetic, non-narrative demo records and no local
+The serverless backend performs a bounded live CFPB read of at most 25 current non-narrative records per request and no local
 CFPB snapshot or narrative-bearing DuckDB. Review endpoints demonstrate the
 contract, but memory and ephemeral filesystem state can reset between requests,
 instances or deployments. The interface therefore labels review interactions

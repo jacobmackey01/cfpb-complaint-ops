@@ -98,8 +98,8 @@ app.py                   Deployment-compatible ASGI entry point
 docker-compose.yml       Local full-stack runtime
 ```
 
-The public demonstration is deployed as two Vercel projects from the same Git
-SHA (`233d6e7`):
+The public demonstration is deployed as two Vercel projects from the verified
+application release SHA (`316ce2e`):
 
 - API: <https://cfpb-complaint-ops-api.vercel.app>
 - Interface: <https://cfpb-complaint-ops-web.vercel.app>

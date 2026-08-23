@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import unicodedata
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
@@ -22,6 +23,11 @@ RANDOM_SEED = 42
 TARGET_SELECTIVE_ACCURACY = 0.80
 MINIMUM_COVERAGE = 0.50
 ROUTER_SCHEMA_VERSION = "1.0.0"
+# Predeclared release gates. Below these supports the routing metrics are
+# explicitly unavailable rather than presented as a defensible performance claim.
+MINIMUM_TEST_ROWS = 50
+MINIMUM_TEST_ROWS_PER_CLASS = 2
+RELEASE_TEST_MONTH_COUNT = 3
 
 
 @dataclass(frozen=True)
@@ -35,6 +41,13 @@ class TrainingRow:
     def month(self) -> str:
         return self.received.strftime("%Y-%m")
 
+    @property
+    def narrative_group(self) -> str:
+        normalized = " ".join(
+            unicodedata.normalize("NFKC", self.text).casefold().split()
+        )
+        return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
 
 @dataclass(frozen=True)
 class ChronologicalSplit:
@@ -42,6 +55,7 @@ class ChronologicalSplit:
     calibration_month: str
     threshold_month: str
     test_month: str
+    test_months: tuple[str, ...]
     train: tuple[TrainingRow, ...]
     calibration: tuple[TrainingRow, ...]
     threshold: tuple[TrainingRow, ...]
@@ -53,18 +67,22 @@ def _complete_month_boundary(as_of: date) -> date:
 
 
 def chronological_complete_month_split(
-    rows: Iterable[TrainingRow], *, as_of: date
+    rows: Iterable[TrainingRow], *, as_of: date, test_month_count: int = 1
 ) -> ChronologicalSplit:
+    if test_month_count < 1:
+        raise ValueError("test_month_count must be positive")
     boundary = _complete_month_boundary(as_of)
     eligible = [row for row in rows if row.received < boundary]
     months = sorted({row.month for row in eligible})
-    if len(months) < 4:
+    if len(months) < test_month_count + 3:
         raise ValueError(
-            "routing requires at least four complete months: train, calibration, "
-            "threshold selection, and test"
+            "routing requires complete train, calibration, threshold, and test "
+            "months for the configured chronological holdout"
         )
-    train_months = tuple(months[:-3])
-    calibration_month, threshold_month, test_month = months[-3:]
+    test_months = tuple(months[-test_month_count:])
+    calibration_month = months[-test_month_count - 2]
+    threshold_month = months[-test_month_count - 1]
+    train_months = tuple(months[: -test_month_count - 2])
     grouped: dict[str, list[TrainingRow]] = defaultdict(list)
     for row in eligible:
         grouped[row.month].append(row)
@@ -73,12 +91,41 @@ def chronological_complete_month_split(
         train_months=train_months,
         calibration_month=calibration_month,
         threshold_month=threshold_month,
-        test_month=test_month,
+        test_month=test_months[-1],
+        test_months=test_months,
         train=train,
         calibration=tuple(grouped[calibration_month]),
         threshold=tuple(grouped[threshold_month]),
-        test=tuple(grouped[test_month]),
+        test=tuple(row for month in test_months for row in grouped[month]),
     )
+
+
+def deduplicate_training_rows(
+    rows: Iterable[TrainingRow],
+) -> tuple[list[TrainingRow], dict[str, int | str]]:
+    """Keep the earliest row for each normalized narrative group.
+
+    Duplicate narrative groups must not cross a chronological split. Keeping
+    the first row is deterministic and prevents text leakage into evaluation.
+    """
+
+    ordered = sorted(rows, key=lambda row: (row.received, row.complaint_id))
+    unique: list[TrainingRow] = []
+    seen: set[str] = set()
+    duplicate_count = 0
+    for row in ordered:
+        group = row.narrative_group
+        if group in seen:
+            duplicate_count += 1
+            continue
+        seen.add(group)
+        unique.append(row)
+    return unique, {
+        "method": "normalized_narrative_sha256_keep_earliest",
+        "input_rows": len(ordered),
+        "unique_narrative_groups": len(unique),
+        "excluded_duplicate_rows": duplicate_count,
+    }
 
 
 def _decision_logits(classifier: SGDClassifier, features: Any) -> np.ndarray:
@@ -205,6 +252,37 @@ def expected_calibration_error(
     return ece
 
 
+def calibration_reliability_bins(
+    probabilities: np.ndarray,
+    labels: Sequence[str],
+    classes: np.ndarray,
+    bins: int = 10,
+) -> list[dict[str, Any]]:
+    predicted = classes[probabilities.argmax(axis=1)].astype(str)
+    confidence = probabilities.max(axis=1)
+    correct = predicted == np.asarray(labels, dtype=str)
+    edges = np.linspace(0, 1, bins + 1)
+    result: list[dict[str, Any]] = []
+    for index in range(bins):
+        lower, upper = float(edges[index]), float(edges[index + 1])
+        in_bin = (
+            (confidence >= lower) & (confidence <= upper)
+            if index == bins - 1
+            else (confidence >= lower) & (confidence < upper)
+        )
+        if in_bin.any():
+            result.append(
+                {
+                    "lower": lower,
+                    "upper": upper,
+                    "mean_confidence": float(confidence[in_bin].mean()),
+                    "accuracy": float(correct[in_bin].mean()),
+                    "count": int(in_bin.sum()),
+                }
+            )
+    return result
+
+
 def multiclass_brier(
     probabilities: np.ndarray, labels: Sequence[str], classes: np.ndarray
 ) -> float:
@@ -242,12 +320,51 @@ def evaluate_router(
     classes: np.ndarray,
     *,
     threshold: float,
+    minimum_test_rows: int = MINIMUM_TEST_ROWS,
+    minimum_class_support: int = MINIMUM_TEST_ROWS_PER_CLASS,
 ) -> dict[str, Any]:
     predicted = classes[probabilities.argmax(axis=1)].astype(str)
     confidence = probabilities.max(axis=1)
     true = np.asarray(labels, dtype=str)
     accepted = confidence >= threshold
     unseen = sorted(set(true) - set(classes.astype(str)))
+    class_counts = Counter(true.tolist())
+    support_gate = {
+        "minimum_test_rows": minimum_test_rows,
+        "minimum_test_rows_per_class": minimum_class_support,
+        "observed_test_rows": len(true),
+        "observed_class_support": dict(sorted(class_counts.items())),
+        "passed": bool(
+            len(true) >= minimum_test_rows
+            and all(count >= minimum_class_support for count in class_counts.values())
+        ),
+    }
+    if not support_gate["passed"]:
+        return {
+            "status": "unavailable_insufficient_test_support",
+            "metrics": {
+                "macro_f1": None,
+                "accuracy": None,
+                "ece": None,
+                "brier": None,
+                "coverage": None,
+                "abstention_rate": None,
+                "selective_accuracy": None,
+                "selective_macro_f1": None,
+                "test_rows": len(true),
+                "accepted_rows": int(accepted.sum()),
+            },
+            "calibration_bins": [],
+            "false_routes": [],
+            "unseen_labels": {
+                "labels": unseen,
+                "row_count": int(sum(label in unseen for label in true)),
+                "rate": float(
+                    sum(label in unseen for label in true) / max(len(true), 1)
+                ),
+            },
+            "support_gate": support_gate,
+        }
     metrics: dict[str, Any] = {
         "macro_f1": float(f1_score(true, predicted, average="macro", zero_division=0)),
         "accuracy": float(accuracy_score(true, predicted)),
@@ -276,13 +393,18 @@ def evaluate_router(
         "accepted_rows": int(accepted.sum()),
     }
     return {
+        "status": "available",
         "metrics": metrics,
+        "calibration_bins": calibration_reliability_bins(
+            probabilities, labels, classes
+        ),
         "false_routes": _false_routes(true.tolist(), predicted.tolist()),
         "unseen_labels": {
             "labels": unseen,
             "row_count": int(sum(label in unseen for label in true)),
             "rate": float(sum(label in unseen for label in true) / max(len(true), 1)),
         },
+        "support_gate": support_gate,
     }
 
 
@@ -365,8 +487,14 @@ def train_router(
     model_path: Path = MODEL_PATH,
     metrics_path: Path = MODEL_METRICS_PATH,
     snapshot_sha256: str = "unknown",
+    test_month_count: int = 1,
+    minimum_test_rows: int = MINIMUM_TEST_ROWS,
+    minimum_class_support: int = MINIMUM_TEST_ROWS_PER_CLASS,
 ) -> dict[str, Any]:
-    split = chronological_complete_month_split(rows, as_of=as_of)
+    unique_rows, duplicate_grouping = deduplicate_training_rows(rows)
+    split = chronological_complete_month_split(
+        unique_rows, as_of=as_of, test_month_count=test_month_count
+    )
     if len({row.label for row in split.train}) < 2:
         raise ValueError("training months must contain at least two product labels")
     min_df = 2 if len(split.train) >= 1_000 else 1
@@ -417,10 +545,12 @@ def train_router(
         [row.label for row in split.test],
         classes,
         threshold=threshold,
+        minimum_test_rows=minimum_test_rows,
+        minimum_class_support=minimum_class_support,
     )
 
     complete_rows = [
-        row for row in rows if row.received < _complete_month_boundary(as_of)
+        row for row in unique_rows if row.received < _complete_month_boundary(as_of)
     ]
     complete_probabilities = _softmax(
         _decision_logits(
@@ -442,7 +572,7 @@ def train_router(
                 "train": split.train_months,
                 "calibration": split.calibration_month,
                 "threshold": split.threshold_month,
-                "test": split.test_month,
+                "test": split.test_months,
             },
         },
         sort_keys=True,
@@ -456,14 +586,19 @@ def train_router(
         "calibration_month": split.calibration_month,
         "threshold_month": split.threshold_month,
         "test_month": split.test_month,
+        "test_months": list(split.test_months),
         "train_rows": len(split.train),
         "calibration_rows": len(split.calibration),
         "threshold_rows": len(split.threshold),
         "test_rows": len(split.test),
-        "split_policy": "last three complete months reserved in order for calibration, threshold selection, and frozen test",
+        "split_policy": "complete months are ordered; calibration and threshold precede the configured multi-month frozen test window",
     }
     report = {
-        "status": "trained",
+        "status": (
+            "trained"
+            if evaluation["status"] == "available"
+            else "trained_evaluation_unavailable"
+        ),
         "schema_version": ROUTER_SCHEMA_VERSION,
         "model_version": model_version,
         "generated_at": generated_at.isoformat(),
@@ -472,8 +607,15 @@ def train_router(
         "estimator": "word_tfidf_1_2gram_plus_sgd_log_loss",
         "snapshot_sha256": snapshot_sha256,
         "split": split_payload,
+        "duplicate_grouping": duplicate_grouping,
+        "evaluation_gate": {
+            "minimum_test_rows": minimum_test_rows,
+            "minimum_test_rows_per_class": minimum_class_support,
+            "test_month_count": test_month_count,
+        },
         "temperature": temperature,
         "calibration": calibration_details,
+        "calibration_bins": evaluation["calibration_bins"],
         "threshold": threshold,
         "threshold_selection": threshold_details,
         **evaluation,
@@ -483,6 +625,8 @@ def train_router(
             "abstained_cases_require_human_review": True,
             "test_month_used_for_threshold_selection": False,
             "current_partial_month_excluded_from_training_and_evaluation": True,
+            "duplicate_narratives_grouped_across_splits": True,
+            "evaluation_unavailable_below_support_gate": True,
         },
     }
     artifact = {
@@ -495,10 +639,14 @@ def train_router(
         "threshold": threshold,
         "classes": classes,
         "split": split_payload,
+        "duplicate_grouping": duplicate_grouping,
     }
     model_path.parent.mkdir(parents=True, exist_ok=True)
     metrics_path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(artifact, model_path, compress=3)
+    report["model_artifact_sha256"] = hashlib.sha256(
+        model_path.read_bytes()
+    ).hexdigest()
     metrics_path.write_text(
         json.dumps(report, indent=2, sort_keys=True) + "\n", "utf-8"
     )

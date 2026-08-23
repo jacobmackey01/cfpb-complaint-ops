@@ -8,7 +8,12 @@ import { useAsyncResource } from '../hooks';
 import type { CaseRecord, RouteDecision, SourceMeta, SummaryDraft } from '../types';
 
 const CaseWorkspace = ({ item, parentSource }: { item: CaseRecord; parentSource: SourceMeta }) => {
-  const source = normalizeSource({ source_kind: item.sourceKind, as_of: parentSource.generatedAt });
+  const source = normalizeSource({
+    source_kind: item.sourceKind,
+    as_of: parentSource.generatedAt,
+    data_mode: parentSource.dataMode,
+    persistence_mode: parentSource.persistenceMode,
+  });
   const [requester, setRequester] = useState('');
   const [summary, setSummary] = useState<SummaryDraft | null>(null);
   const [summaryBusy, setSummaryBusy] = useState(false);

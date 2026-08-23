@@ -12,6 +12,8 @@ const demoSource: SourceMeta = {
   generatedAt: '2026-08-01T09:00:00Z',
   isDemo: true,
   isVerifiedPublicData: false,
+  dataMode: 'synthetic_offline_demo',
+  persistenceMode: 'browser_local_only',
 };
 
 export const demoCases: CaseQueue = {
@@ -280,6 +282,8 @@ export const demoModelMetrics: ModelMetrics = {
   ],
   // No manual review has taken place for the offline fallback. Never invent this metric.
   summaryFactuality: null,
+  summaryClaimsSupportedRate: null,
+  summaryQuotesExactRate: null,
   summaryReviewedN: 0,
   latencyP50Ms: 284,
   latencyP95Ms: 791,

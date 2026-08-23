@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import json
 from datetime import date
 
 import duckdb
@@ -137,6 +138,31 @@ def _complete_worksheet(path) -> None:
         writer.writerows(rows)
 
 
+def _manifest_for(sample_path, worksheet_path):
+    sample = json.loads(sample_path.read_text(encoding="utf-8"))
+    with worksheet_path.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.DictReader(stream))
+    payload = {
+        "schema_version": "summary-draft-manifest-v1",
+        "status": "private_generated_drafts",
+        "source_sample_manifest_sha256": sample["sample_manifest_sha256"],
+        "parent_snapshot_sha256": sample["parent_snapshot_sha256"],
+        "manifest_sha256": "m" * 64,
+        "items": [
+            {
+                "complaint_id": row["complaint_id"],
+                "summary_id": row["summary_id"],
+                "model": "gpt-5.6-luna",
+                "draft_sha256": "d" * 64,
+            }
+            for row in rows
+        ],
+    }
+    path = worksheet_path.with_suffix(".manifest.json")
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
 def test_private_review_import_validates_and_persists_completed_rows(tmp_path) -> None:
     database = tmp_path / "sample.duckdb"
     _database(database)
@@ -153,11 +179,13 @@ def test_private_review_import_validates_and_persists_completed_rows(tmp_path) -
         output_path=worksheet_path,
     )
     _complete_worksheet(worksheet_path)
+    manifest_path = _manifest_for(sample_path, worksheet_path)
 
     result = import_summary_review(
         sample_path=sample_path,
         worksheet_path=worksheet_path,
         database_path=database,
+        manifest_path=manifest_path,
     )
 
     assert result["status"] == "private_reviews_imported"
@@ -182,6 +210,7 @@ def test_private_review_import_validates_and_persists_completed_rows(tmp_path) -
             sample_path=sample_path,
             worksheet_path=worksheet_path,
             database_path=database,
+            manifest_path=manifest_path,
         )
 
 
@@ -202,6 +231,7 @@ def test_private_review_import_rejects_extra_narrative_column_before_writing(
         sample_path=sample_path,
         output_path=worksheet_path,
     )
+    manifest_path = _manifest_for(sample_path, worksheet_path)
     with worksheet_path.open(encoding="utf-8", newline="") as stream:
         reader = csv.DictReader(stream)
         fieldnames = list(reader.fieldnames or []) + ["narrative"]
@@ -217,6 +247,7 @@ def test_private_review_import_rejects_extra_narrative_column_before_writing(
             sample_path=sample_path,
             worksheet_path=worksheet_path,
             database_path=database,
+            manifest_path=manifest_path,
         )
 
 
@@ -238,6 +269,7 @@ def test_private_review_import_rejects_sample_mismatch_and_invalid_boolean(
         output_path=worksheet_path,
     )
     _complete_worksheet(worksheet_path)
+    manifest_path = _manifest_for(sample_path, worksheet_path)
     with worksheet_path.open(encoding="utf-8", newline="") as stream:
         reader = csv.DictReader(stream)
         fieldnames = reader.fieldnames
@@ -255,6 +287,7 @@ def test_private_review_import_rejects_sample_mismatch_and_invalid_boolean(
             sample_path=sample_path,
             worksheet_path=worksheet_path,
             database_path=database,
+            manifest_path=manifest_path,
         )
 
     rows[0]["complaint_id"] = frozen_id
@@ -268,4 +301,5 @@ def test_private_review_import_rejects_sample_mismatch_and_invalid_boolean(
             sample_path=sample_path,
             worksheet_path=worksheet_path,
             database_path=database,
+            manifest_path=manifest_path,
         )

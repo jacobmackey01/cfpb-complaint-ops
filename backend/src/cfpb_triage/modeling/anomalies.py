@@ -96,6 +96,7 @@ def generate_anomaly_report(
     database_path: Path = DUCKDB_PATH,
     output_path: Path = ANOMALIES_PATH,
     as_of: date | None = None,
+    snapshot_sha256: str = "unknown",
 ) -> dict[str, object]:
     as_of = as_of or datetime.now(timezone.utc).date()
     connection = duckdb.connect(str(database_path), read_only=True)
@@ -115,6 +116,7 @@ def generate_anomaly_report(
     report: dict[str, object] = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "as_of": as_of.isoformat(),
+        "snapshot_sha256": snapshot_sha256,
         "metric_basis": "weekly_stratified_monthly_capped_snapshot_sample",
         "publication_lag_days": PUBLICATION_LAG_DAYS,
         "cutoff_date": anomaly_cutoff(as_of).isoformat(),

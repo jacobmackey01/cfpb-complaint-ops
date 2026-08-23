@@ -11,6 +11,8 @@ export interface SourceMeta {
   generatedAt: string | null;
   isDemo: boolean;
   isVerifiedPublicData: boolean;
+  dataMode: string;
+  persistenceMode: string;
 }
 
 export type CasePriority = 'urgent' | 'high' | 'standard' | 'low';
@@ -133,6 +135,8 @@ export interface ModelMetrics {
   calibration: CalibrationBin[];
   drift: DriftPoint[];
   summaryFactuality: number | null;
+  summaryClaimsSupportedRate: number | null;
+  summaryQuotesExactRate: number | null;
   summaryReviewedN: number;
   latencyP50Ms: number | null;
   latencyP95Ms: number | null;

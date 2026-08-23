@@ -56,6 +56,11 @@ class ReviewNotFoundError(LookupError):
     pass
 
 
+class PublicWriteDisabledError(PermissionError):
+    # Public live-read deployments do not accept shared server-side writes.
+    pass
+
+
 class ComplaintRepository:
     def __init__(
         self,
@@ -173,6 +178,22 @@ class ComplaintRepository:
             return f"{LIVE_READ_NOTICE} {CFPB_LIMITATION}"
         return CFPB_LIMITATION
 
+    @property
+    def data_mode(self) -> str:
+        if self._demo:
+            return "synthetic_offline_demo"
+        if self._live:
+            return "bounded_live_cfpb_read"
+        return "local_cfpb_snapshot"
+
+    @property
+    def persistence_mode(self) -> str:
+        if self._demo:
+            return "process_memory_demo_only"
+        if self._live:
+            return "disabled_public_writes"
+        return "local_duckdb_review_store"
+
     def _connect(self, *, read_only: bool = False) -> duckdb.DuckDBPyConnection:
         connection = duckdb.connect(str(self.database_path), read_only=read_only)
         if not read_only:
@@ -267,6 +288,8 @@ class ComplaintRepository:
                     page_size=page_size,
                     source_kind=self.source_kind,
                     as_of=self._as_of(),
+                    data_mode=self.data_mode,
+                    persistence_mode=self.persistence_mode,
                     limitation=self.limitation,
                 )
 
@@ -359,6 +382,8 @@ class ComplaintRepository:
             page_size=page_size,
             source_kind=self.source_kind,
             as_of=self._as_of(),
+            data_mode=self.data_mode,
+            persistence_mode=self.persistence_mode,
             limitation=self.limitation,
         )
 
@@ -435,6 +460,8 @@ class ComplaintRepository:
             return OverviewMetrics(
                 source_kind=self.source_kind,
                 as_of=self._as_of(),
+                data_mode=self.data_mode,
+                persistence_mode=self.persistence_mode,
                 total_complaints=total,
                 narrative_count=sum(row.has_narrative for row in rows),
                 narrative_rate=sum(row.has_narrative for row in rows) / max(total, 1),
@@ -471,6 +498,8 @@ class ComplaintRepository:
         return OverviewMetrics(
             source_kind=self.source_kind,
             as_of=self._as_of(),
+            data_mode=self.data_mode,
+            persistence_mode=self.persistence_mode,
             total_complaints=total,
             narrative_count=narratives,
             narrative_rate=narratives / max(total, 1),
@@ -594,6 +623,8 @@ class ComplaintRepository:
             series=points,
             source_kind=self.source_kind,
             as_of=self._as_of(),
+            data_mode=self.data_mode,
+            persistence_mode=self.persistence_mode,
         )
 
     def anomalies(
@@ -615,6 +646,8 @@ class ComplaintRepository:
                 publication_lag_days=PUBLICATION_LAG_DAYS,
                 cutoff_date=anomaly_cutoff(as_of),
                 source_kind=self.source_kind,
+                data_mode=self.data_mode,
+                persistence_mode=self.persistence_mode,
             )
         dimensions: list[Literal["product", "issue"]] = (
             ["product", "issue"] if dimension == "all" else [dimension]
@@ -647,6 +680,8 @@ class ComplaintRepository:
             publication_lag_days=PUBLICATION_LAG_DAYS,
             cutoff_date=anomaly_cutoff(as_of),
             source_kind=self.source_kind,
+            data_mode=self.data_mode,
+            persistence_mode=self.persistence_mode,
         )
 
     def record_route(
@@ -666,8 +701,15 @@ class ComplaintRepository:
             status=status,  # type: ignore[arg-type]
             reviewed_at=datetime.now(timezone.utc),
             ai_made_final_decision=False,
+            data_mode=self.data_mode,
+            persistence_mode=self.persistence_mode,
         )
-        if self._demo or self._live:
+        if self._live:
+            raise PublicWriteDisabledError(
+                "Public bounded live-read mode disables shared route writes; "
+                "use a local authenticated deployment for durable review."
+            )
+        if self._demo:
             with self._lock:
                 self._demo_routes[complaint_id] = response
             return response
@@ -689,7 +731,11 @@ class ComplaintRepository:
         return response
 
     def save_summary(self, draft: SummaryDraft, requested_by: str) -> None:
-        if self._demo or self._live:
+        if self._live:
+            raise PublicWriteDisabledError(
+                "Public bounded live-read mode disables shared summary writes."
+            )
+        if self._demo:
             with self._lock:
                 self._demo_summaries[draft.summary_id] = draft
             return
@@ -887,6 +933,8 @@ class ComplaintRepository:
                 "unseen_labels": {"labels": [], "row_count": 0, "rate": 0},
                 "drift": [],
                 "integrity": {"final_decisions_by_ai": False},
+                "data_mode": self.data_mode,
+                "persistence_mode": self.persistence_mode,
             }
         if self._live:
             return {
@@ -898,6 +946,8 @@ class ComplaintRepository:
                 "drift": [],
                 "integrity": {"final_decisions_by_ai": False},
                 "limitation": LIVE_READ_NOTICE,
+                "data_mode": self.data_mode,
+                "persistence_mode": self.persistence_mode,
             }
         if not MODEL_METRICS_PATH.exists():
             return {
@@ -907,9 +957,13 @@ class ComplaintRepository:
                 "false_routes": [],
                 "unseen_labels": {"labels": [], "row_count": 0, "rate": 0},
                 "drift": [],
+                "data_mode": self.data_mode,
+                "persistence_mode": self.persistence_mode,
             }
         payload = json.loads(MODEL_METRICS_PATH.read_text("utf-8"))
         payload["source_kind"] = self.source_kind.value
+        payload["data_mode"] = self.data_mode
+        payload["persistence_mode"] = self.persistence_mode
         return payload
 
     def quality(self) -> dict[str, Any]:

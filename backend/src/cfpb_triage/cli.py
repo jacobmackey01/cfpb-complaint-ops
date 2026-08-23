@@ -15,14 +15,17 @@ from cfpb_triage.data.snapshot import download_recent_snapshot
 from cfpb_triage.data.source_metrics import ingest_source_window_metrics
 from cfpb_triage.data.warehouse import build_warehouse
 from cfpb_triage.evaluation import (
+    SUMMARY_DRAFT_MANIFEST_PATH,
     SUMMARY_EVAL_SAMPLE_PATH,
     SUMMARY_REVIEW_TEMPLATE_PATH,
+    build_summary_draft_manifest,
     export_summary_review_template,
     freeze_summary_factuality_sample,
     import_summary_review,
 )
 from cfpb_triage.modeling.anomalies import generate_anomaly_report
 from cfpb_triage.modeling.router import (
+    RELEASE_TEST_MONTH_COUNT,
     apply_router_to_warehouse,
     load_training_rows,
     train_router,
@@ -110,6 +113,7 @@ def cmd_train(args: argparse.Namespace) -> int:
         rows,
         as_of=as_of,
         snapshot_sha256=str(manifest.get("snapshot_sha256", "unknown")),
+        test_month_count=RELEASE_TEST_MONTH_COUNT,
     )
     scoring = apply_router_to_warehouse(database_path=args.database)
     _print({"training": report, "warehouse_scoring": scoring})
@@ -117,9 +121,11 @@ def cmd_train(args: argparse.Namespace) -> int:
 
 
 def cmd_anomalies(args: argparse.Namespace) -> int:
+    manifest = _manifest()
     report = generate_anomaly_report(
         database_path=args.database,
         as_of=_effective_as_of(args.as_of),
+        snapshot_sha256=str(manifest.get("snapshot_sha256", "unknown")),
     )
     _print(report)
     return 0
@@ -152,9 +158,14 @@ def cmd_build_all(args: argparse.Namespace) -> int:
         rows,
         as_of=args.as_of,
         snapshot_sha256=manifest["snapshot_sha256"],
+        test_month_count=RELEASE_TEST_MONTH_COUNT,
     )
     scoring = apply_router_to_warehouse(database_path=DUCKDB_PATH)
-    anomalies = generate_anomaly_report(database_path=DUCKDB_PATH, as_of=args.as_of)
+    anomalies = generate_anomaly_report(
+        database_path=DUCKDB_PATH,
+        as_of=args.as_of,
+        snapshot_sha256=manifest["snapshot_sha256"],
+    )
     _print(
         {
             "status": "complete",
@@ -197,6 +208,17 @@ def cmd_import_summary_review(args: argparse.Namespace) -> int:
             sample_path=args.sample,
             worksheet_path=args.worksheet,
             database_path=args.database,
+            manifest_path=args.manifest,
+        )
+    )
+    return 0
+
+
+def cmd_build_summary_manifest(args: argparse.Namespace) -> int:
+    _print(
+        build_summary_draft_manifest(
+            pack_path=args.pack,
+            output_path=args.output,
         )
     )
     return 0
@@ -325,7 +347,23 @@ def build_parser() -> argparse.ArgumentParser:
         default=SUMMARY_REVIEW_TEMPLATE_PATH,
     )
     summary_review_import.add_argument("--database", type=Path, default=DUCKDB_PATH)
+    summary_review_import.add_argument(
+        "--manifest",
+        type=Path,
+        default=SUMMARY_DRAFT_MANIFEST_PATH,
+        help="private ID-only manifest produced from the generated summary pack",
+    )
     summary_review_import.set_defaults(handler=cmd_import_summary_review)
+
+    summary_manifest = subparsers.add_parser(
+        "build-summary-manifest",
+        help="create a private ID-only manifest binding generated drafts to complaint IDs",
+    )
+    summary_manifest.add_argument("--pack", type=Path, required=True)
+    summary_manifest.add_argument(
+        "--output", type=Path, default=SUMMARY_DRAFT_MANIFEST_PATH
+    )
+    summary_manifest.set_defaults(handler=cmd_build_summary_manifest)
 
     demo = subparsers.add_parser(
         "bootstrap-demo",

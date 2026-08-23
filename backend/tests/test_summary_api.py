@@ -133,9 +133,13 @@ def test_demo_api_is_explicit_and_all_state_changes_require_a_reviewer(
     health = client.get("/health")
     assert health.status_code == 200
     assert health.json()["source_kind"] == "synthetic_offline_demo"
+    assert health.json()["data_mode"] == "synthetic_offline_demo"
+    assert health.json()["persistence_mode"] == "process_memory_demo_only"
 
     cases = client.get("/api/v1/cases").json()
     assert cases["source_kind"] == "synthetic_offline_demo"
+    assert cases["data_mode"] == "synthetic_offline_demo"
+    assert cases["persistence_mode"] == "process_memory_demo_only"
     complaint_id = cases["items"][0]["complaint_id"]
     assert cases["items"][0]["source_kind"] == "synthetic_offline_demo"
 
@@ -191,6 +195,9 @@ def test_demo_api_is_explicit_and_all_state_changes_require_a_reviewer(
     system = client.get("/api/v1/metrics/system").json()
     assert system["request_count"] >= 1
     assert "summary_factuality" in system
+    monitoring = client.get("/api/v1/metrics/monitoring").json()
+    assert monitoring["data_mode"] == "synthetic_offline_demo"
+    assert monitoring["summary_factuality"]["reviewed_sample_count"] == 1
 
 
 class FakePublicRepository:
@@ -280,3 +287,42 @@ def test_ambiguous_or_altered_quote_text_fails_closed() -> None:
     altered.evidence_quotes = [EvidenceQuote(text="not in narrative", start=1, end=2)]
     with pytest.raises(SummaryGroundingError):
         normalize_exact_quotes(altered, NARRATIVE)
+
+
+def test_bounded_live_read_exposes_mode_and_rejects_shared_route_writes(
+    tmp_path,
+) -> None:
+    repository = ComplaintRepository(
+        database_path=tmp_path / "missing.duckdb",
+        live_read_mode=True,
+        allow_demo_fallback=False,
+    )
+    repository._live_cases = [
+        CaseRecord(
+            complaint_id="live-1",
+            date_received=date(2026, 8, 1),
+            product="Credit card",
+            issue="Billing dispute",
+            narrative=NARRATIVE,
+            has_narrative=True,
+            source_kind=SourceKind.CFPB_PUBLIC,
+            abstained=True,
+            requires_manual_attention=True,
+        )
+    ]
+    repository._live_loaded = True
+    client = TestClient(create_app(repository=repository, app_settings=Settings()))
+    health = client.get("/health").json()
+    assert health["data_mode"] == "bounded_live_cfpb_read"
+    assert health["persistence_mode"] == "disabled_public_writes"
+    cases = client.get("/api/v1/cases").json()
+    assert cases["data_mode"] == "bounded_live_cfpb_read"
+    response = client.patch(
+        "/api/v1/cases/live-1/route",
+        json={
+            "reviewer_id": "reviewer-1",
+            "decision": "override",
+            "approved_route": "Credit card",
+        },
+    )
+    assert response.status_code == 403

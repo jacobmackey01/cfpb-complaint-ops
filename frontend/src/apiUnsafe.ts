@@ -90,6 +90,16 @@ export const normalizeSource = (raw: unknown, fallbackKind?: unknown): SourceMet
   ) || 'unknown') as SourceKind;
   const isDemo = demoKind(sourceKind);
   const isVerifiedPublicData = sourceKind.startsWith('cfpb_') && !isDemo;
+  const dataMode =
+    firstString(record.data_mode, record.dataMode) ||
+    (isDemo
+      ? 'synthetic_offline_demo'
+      : sourceKind.startsWith('cfpb_')
+        ? 'legacy_cfpb_source_unverified_mode'
+        : 'unknown');
+  const persistenceMode =
+    firstString(record.persistence_mode, record.persistenceMode) ||
+    (isDemo ? 'browser_local_only' : 'unknown');
 
   return {
     sourceKind,
@@ -97,6 +107,8 @@ export const normalizeSource = (raw: unknown, fallbackKind?: unknown): SourceMet
     generatedAt: firstString(record.as_of, record.generated_at, record.generatedAt, record.snapshot_date),
     isDemo,
     isVerifiedPublicData,
+    dataMode,
+    persistenceMode,
   };
 };
 
@@ -296,25 +308,51 @@ const normalizeDrift = (raw: unknown): DriftPoint | null => {
     product: firstString(record.product, record.label) || 'All products',
     macroF1: clampRate(firstNumber(record.macro_f1, record.macroF1)),
     abstentionRate: clampRate(firstNumber(record.abstention_rate, record.abstentionRate)),
-    driftScore: firstNumber(record.drift_score, record.psi, record.js_divergence),
+    driftScore: firstNumber(record.drift_score, record.psi, record.js_divergence, record.psi_component),
     status,
   };
 };
 
+const flattenDrift = (value: unknown): unknown[] =>
+  asArray(value).flatMap((item) => {
+    const record = asRecord(item);
+    const children = asArray(record.by_product ?? record.byProduct);
+    if (!children.length) return [item];
+    const period = firstString(record.period, record.month, record.date);
+    return children.map((child) => ({
+      ...asRecord(child),
+      period: firstString(asRecord(child).period, period),
+    }));
+  });
+
 export const normalizeModelMetrics = (raw: unknown): ModelMetrics => {
-  const record = asRecord(raw);
+  const root = asRecord(raw);
+  const nestedModel = asRecord(root.model);
+  const record: JsonRecord = { ...root, ...nestedModel };
   const metrics = asRecord(record.metrics);
   const split = asRecord(record.split);
-  const source = normalizeSource(record);
-  const summaryFactuality = clampRate(
-    firstNumber(
-      record.summary_factuality,
-      record.summaryFactuality,
-      metrics.summary_factuality,
-    ),
-  );
+  const system = asRecord(root.system);
+  const summary = asRecord(root.summary_factuality);
+  const source = normalizeSource(record, firstString(root.source_kind));
   const summaryReviewedN =
-    firstNumber(record.summary_reviewed_n, record.summaryReviewedN, metrics.summary_reviewed_n) ?? 0;
+    firstNumber(
+      summary.reviewed_sample_count,
+      record.summary_reviewed_n,
+      record.summaryReviewedN,
+      metrics.summary_reviewed_n,
+    ) ?? 0;
+  const summaryFactuality = firstNumber(
+    summary.mean_factuality_score,
+    record.summary_factuality,
+    record.summaryFactuality,
+    metrics.summary_factuality,
+  );
+  const summaryClaimsSupportedRate = clampRate(
+    firstNumber(summary.all_claims_supported_rate, record.summary_claims_supported_rate),
+  );
+  const summaryQuotesExactRate = clampRate(
+    firstNumber(summary.exact_quote_rate, record.summary_quotes_exact_rate),
+  );
 
   return {
     modelName: firstString(record.model_name, record.modelName) || 'Complaint routing classifier',
@@ -342,24 +380,49 @@ export const normalizeModelMetrics = (raw: unknown): ModelMetrics => {
       firstNumber(record.threshold, metrics.threshold, record.abstention_threshold),
     ),
     evaluatedRows:
-      firstNumber(metrics.evaluated_rows, metrics.n, record.evaluated_rows, split.test_rows) ?? 0,
+      firstNumber(metrics.evaluated_rows, metrics.test_rows, record.evaluated_rows, split.test_rows) ?? 0,
     falseRoutes: asArray(record.false_routes ?? metrics.false_routes)
       .map(normalizeFalseRoute)
       .filter((item): item is FalseRoutePattern => item !== null),
-    calibration: asArray(record.calibration ?? metrics.calibration)
+    calibration: asArray(
+      record.calibration_bins ?? record.reliability_bins ?? metrics.calibration_bins,
+    )
       .map(normalizeCalibration)
       .filter((item): item is CalibrationBin => item !== null),
-    drift: asArray(record.drift ?? metrics.drift)
+    drift: flattenDrift(record.drift ?? metrics.drift)
       .map(normalizeDrift)
       .filter((item): item is DriftPoint => item !== null),
-    // A factuality score is shown only with a non-zero reviewed denominator.
     summaryFactuality: summaryReviewedN > 0 ? summaryFactuality : null,
+    summaryClaimsSupportedRate,
+    summaryQuotesExactRate,
     summaryReviewedN,
-    latencyP50Ms: firstNumber(record.latency_p50_ms, metrics.latency_p50_ms),
-    latencyP95Ms: firstNumber(record.latency_p95_ms, metrics.latency_p95_ms),
-    meanApiCostUsd: firstNumber(record.mean_api_cost_usd, metrics.mean_api_cost_usd),
-    systemFailures: firstNumber(record.system_failures, metrics.system_failures) ?? 0,
-    refusalRate: clampRate(firstNumber(record.refusal_rate, metrics.refusal_rate)),
+    latencyP50Ms: firstNumber(
+      system.p50_latency_ms,
+      system.latency_p50_ms,
+      record.latency_p50_ms,
+      metrics.latency_p50_ms,
+    ),
+    latencyP95Ms: firstNumber(
+      system.p95_latency_ms,
+      system.latency_p95_ms,
+      record.latency_p95_ms,
+      metrics.latency_p95_ms,
+    ),
+    meanApiCostUsd: firstNumber(
+      system.total_cost_usd && system.request_count
+        ? Number(system.total_cost_usd) / Number(system.request_count)
+        : null,
+      record.mean_api_cost_usd,
+      metrics.mean_api_cost_usd,
+    ),
+    systemFailures: firstNumber(
+      system.failure_count,
+      record.system_failures,
+      metrics.system_failures,
+    ) ?? 0,
+    refusalRate: clampRate(
+      firstNumber(system.refusal_rate, record.refusal_rate, metrics.refusal_rate),
+    ),
     source,
   };
 };
@@ -481,7 +544,7 @@ export const getAnomalies = async (signal?: AbortSignal): Promise<AnomalyReport>
 
 export const getModelMetrics = async (signal?: AbortSignal): Promise<ModelMetrics> => {
   try {
-    return normalizeModelMetrics(await requestJson('/model/metrics', { signal }));
+    return normalizeModelMetrics(await requestJson('/metrics/monitoring', { signal }));
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') throw error;
     return demoModelMetrics;
@@ -532,6 +595,8 @@ export const createSummary = async (
         generatedAt: new Date().toISOString(),
         isDemo: true,
         isVerifiedPublicData: false,
+        dataMode: 'synthetic_offline_demo',
+        persistenceMode: 'browser_local_only',
       },
     };
   }

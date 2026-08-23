@@ -198,9 +198,19 @@ export const ModelPage = () => {
               <dd>
                 {model.summaryReviewedN === 0 || model.summaryFactuality === null
                   ? 'Not measured'
-                  : formatPercent(model.summaryFactuality)}
+                  : formatDecimal(model.summaryFactuality, 2) + ' / 5'}
               </dd>
               <small>Manually reviewed n={formatInteger(model.summaryReviewedN)}</small>
+            </div>
+            <div>
+              <dt>Claims supported</dt>
+              <dd>{formatPercent(model.summaryClaimsSupportedRate)}</dd>
+              <small>Reviewed summaries with all claims supported</small>
+            </div>
+            <div>
+              <dt>Exact quotes</dt>
+              <dd>{formatPercent(model.summaryQuotesExactRate)}</dd>
+              <small>Reviewed summaries with exact narrative quotes</small>
             </div>
             <div>
               <dt>API latency p50 / p95</dt>

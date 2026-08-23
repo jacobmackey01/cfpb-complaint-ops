@@ -18,6 +18,8 @@ SUMMARY_EVAL_RUBRIC_VERSION = "summary-factuality-v1"
 SUMMARY_EVAL_SEED = 42
 SUMMARY_EVAL_STRATA = ("month", "product")
 SUMMARY_REVIEW_TEMPLATE_PATH = ARTIFACT_DIR / "summary_factuality_review_template.csv"
+SUMMARY_DRAFT_MANIFEST_PATH = ARTIFACT_DIR / "summary_draft_manifest.json"
+SUMMARY_DRAFT_MANIFEST_SCHEMA = "summary-draft-manifest-v1"
 SUMMARY_REVIEW_TEMPLATE_COLUMNS = (
     "review_row_id",
     "summary_id",
@@ -107,6 +109,68 @@ def freeze_summary_factuality_sample(
         payload, sort_keys=True, ensure_ascii=False, separators=(",", ":")
     ).encode("utf-8")
     payload["sample_manifest_sha256"] = hashlib.sha256(canonical).hexdigest()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return payload
+
+
+def build_summary_draft_manifest(
+    *,
+    pack_path: Path,
+    output_path: Path = SUMMARY_DRAFT_MANIFEST_PATH,
+) -> dict[str, Any]:
+    """Create a private ID-only manifest binding each review row to a draft."""
+
+    pack = json.loads(pack_path.read_text(encoding="utf-8"))
+    items = pack.get("items")
+    if not isinstance(items, list) or not items:
+        raise ValueError("summary pack must contain generated draft items")
+    manifest_items: list[dict[str, str]] = []
+    seen_complaints: set[str] = set()
+    seen_summaries: set[str] = set()
+    for item in items:
+        if not isinstance(item, dict) or not isinstance(item.get("draft"), dict):
+            raise TypeError("summary pack item must contain a draft object")
+        draft = item["draft"]
+        complaint_id = str(
+            item.get("complaint_id") or draft.get("complaint_id") or ""
+        ).strip()
+        summary_id = str(draft.get("summary_id") or "").strip()
+        model = str(draft.get("model") or "").strip()
+        if not complaint_id or not summary_id or not model:
+            raise ValueError(
+                "each draft manifest item needs complaint_id, summary_id, and model"
+            )
+        if complaint_id in seen_complaints or summary_id in seen_summaries:
+            raise ValueError("draft manifest IDs must be unique")
+        seen_complaints.add(complaint_id)
+        seen_summaries.add(summary_id)
+        canonical_draft = json.dumps(
+            draft, sort_keys=True, ensure_ascii=False, separators=(",", ":")
+        ).encode("utf-8")
+        manifest_items.append(
+            {
+                "complaint_id": complaint_id,
+                "summary_id": summary_id,
+                "model": model,
+                "draft_sha256": hashlib.sha256(canonical_draft).hexdigest(),
+            }
+        )
+    payload: dict[str, Any] = {
+        "schema_version": SUMMARY_DRAFT_MANIFEST_SCHEMA,
+        "status": "private_generated_drafts",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "source_sample_manifest_sha256": pack.get("sample_manifest_sha256"),
+        "parent_snapshot_sha256": pack.get("parent_snapshot_sha256"),
+        "draft_count": len(manifest_items),
+        "items": manifest_items,
+    }
+    canonical = json.dumps(
+        payload, sort_keys=True, ensure_ascii=False, separators=(",", ":")
+    ).encode("utf-8")
+    payload["manifest_sha256"] = hashlib.sha256(canonical).hexdigest()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -205,8 +269,9 @@ def import_summary_review(
     sample_path: Path = SUMMARY_EVAL_SAMPLE_PATH,
     worksheet_path: Path = SUMMARY_REVIEW_TEMPLATE_PATH,
     database_path: Path = DUCKDB_PATH,
+    manifest_path: Path = SUMMARY_DRAFT_MANIFEST_PATH,
 ) -> dict[str, Any]:
-    """Validate and persist completed private review rows without narrative data."""
+    """Validate completed rows and bind them to a private generated-draft manifest."""
 
     sample = json.loads(sample_path.read_text(encoding="utf-8"))
     if sample.get("status") != "frozen_unreviewed":
@@ -233,11 +298,50 @@ def import_summary_review(
                 "review worksheet columns must exactly match the ID-only template"
             )
         worksheet_rows = list(reader)
-
     if not worksheet_rows:
         raise ValueError("review worksheet must contain at least one completed row")
 
-    records: list[tuple[str, SummaryFactualityReview]] = []
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("schema_version") != SUMMARY_DRAFT_MANIFEST_SCHEMA:
+        raise ValueError("summary draft manifest schema is unsupported")
+    if manifest.get("status") != "private_generated_drafts":
+        raise ValueError(
+            "summary draft manifest is not a private generated-draft manifest"
+        )
+    if manifest.get("source_sample_manifest_sha256") != sample.get(
+        "sample_manifest_sha256"
+    ):
+        raise ValueError(
+            "summary draft manifest does not match the frozen review sample"
+        )
+    manifest_items = manifest.get("items")
+    if not isinstance(manifest_items, list):
+        raise TypeError("summary draft manifest items must be a list")
+    manifest_by_complaint: dict[str, dict[str, str]] = {}
+    for item in manifest_items:
+        if not isinstance(item, dict):
+            raise TypeError("summary draft manifest item must be an object")
+        complaint_id = str(item.get("complaint_id", "")).strip()
+        summary_id = str(item.get("summary_id", "")).strip()
+        if complaint_id not in sample_by_id or not summary_id:
+            raise ValueError(
+                "summary draft manifest complaint IDs must be in the frozen sample"
+            )
+        if complaint_id in manifest_by_complaint:
+            raise ValueError("summary draft manifest complaint IDs must be unique")
+        manifest_by_complaint[complaint_id] = {
+            "complaint_id": complaint_id,
+            "summary_id": summary_id,
+            "model": str(item.get("model", "")).strip(),
+            "draft_sha256": str(item.get("draft_sha256", "")).strip(),
+        }
+        if (
+            not manifest_by_complaint[complaint_id]["model"]
+            or len(manifest_by_complaint[complaint_id]["draft_sha256"]) != 64
+        ):
+            raise ValueError("summary draft manifest item has incomplete lineage")
+
+    records: list[tuple[str, SummaryFactualityReview, dict[str, str]]] = []
     seen_complaint_ids: set[str] = set()
     seen_summary_ids: set[str] = set()
     for row_number, row in enumerate(worksheet_rows, start=2):
@@ -257,7 +361,6 @@ def import_summary_review(
         if complaint_id in seen_complaint_ids:
             raise ValueError(f"row {row_number}: duplicate complaint_id")
         seen_complaint_ids.add(complaint_id)
-
         month = _review_text(
             row.get("month"), field="month", row_number=row_number, maximum=20
         )
@@ -270,13 +373,17 @@ def import_summary_review(
             raise ValueError(
                 f"row {row_number}: frozen sample ID/stratum values do not match"
             )
-
         summary_id = _review_text(
             row.get("summary_id"),
             field="summary_id",
             row_number=row_number,
             maximum=200,
         )
+        manifest_item = manifest_by_complaint.get(complaint_id)
+        if manifest_item is None or summary_id != manifest_item["summary_id"]:
+            raise ValueError(
+                f"row {row_number}: summary_id is not the generated draft bound to this complaint"
+            )
         if summary_id in seen_summary_ids:
             raise ValueError(f"row {row_number}: duplicate summary_id")
         seen_summary_ids.add(summary_id)
@@ -302,7 +409,10 @@ def import_summary_review(
             raise ValueError(
                 f"row {row_number}: factuality_score_1_to_5 must be an integer from 1 to 5"
             )
-
+        lineage = {
+            **manifest_item,
+            "review_manifest_sha256": str(manifest["manifest_sha256"]),
+        }
         records.append(
             (
                 summary_id,
@@ -325,10 +435,12 @@ def import_summary_review(
                         row_number=row_number,
                     ),
                 ),
+                lineage,
             )
         )
 
     existing_summary_ids: set[str] = set()
+    existing_bound_ids: set[str] = set()
     if database_path.exists():
         connection = duckdb.connect(str(database_path), read_only=True)
         try:
@@ -337,27 +449,41 @@ def import_summary_review(
                 "WHERE table_name = 'summary_factuality_reviews'"
             ).fetchone()[0]
             if table_exists:
-                existing_summary_ids = {
-                    str(row[0])
-                    for row in connection.execute(
-                        "SELECT summary_id FROM summary_factuality_reviews"
-                    ).fetchall()
-                }
+                rows = connection.execute(
+                    """
+                    SELECT summary_id, review_manifest_sha256
+                    FROM summary_factuality_reviews
+                    """
+                ).fetchall()
+                existing_summary_ids = {str(row[0]) for row in rows}
+                existing_bound_ids = {str(row[0]) for row in rows if row[1] is not None}
         finally:
             connection.close()
-    duplicate_summary_ids = seen_summary_ids & existing_summary_ids
+
+    duplicate_summary_ids = {
+        summary_id for summary_id, _, _ in records if summary_id in existing_bound_ids
+    }
     if duplicate_summary_ids:
         raise ValueError("worksheet contains summary_id values already reviewed")
 
     store = SummaryEvaluationStore(database_path=database_path, sample_path=sample_path)
-    for summary_id, review in records:
-        store.record(summary_id, review)
+    inserted_count = 0
+    rebound_count = 0
+    for summary_id, review, lineage in records:
+        if summary_id in existing_summary_ids:
+            store.bind_existing_review(summary_id, lineage=lineage)
+            rebound_count += 1
+        else:
+            store.record(summary_id, review, lineage=lineage)
+            inserted_count += 1
     metrics = store.metrics()
     return {
         "status": "private_reviews_imported",
         "source_sample_status": sample["status"],
         "source_sample_manifest_sha256": sample.get("sample_manifest_sha256"),
-        "imported_row_count": len(records),
+        "review_manifest_sha256": manifest.get("manifest_sha256"),
+        "imported_row_count": inserted_count,
+        "rebound_existing_row_count": rebound_count,
         "reviewed_sample_count": metrics["reviewed_sample_count"],
         "metrics": metrics,
         "source_sample_changed": False,

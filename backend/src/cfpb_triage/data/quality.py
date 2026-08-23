@@ -9,6 +9,8 @@ from pathlib import Path
 from cfpb_triage.paths import QUALITY_PATH, SNAPSHOT_PATH
 from cfpb_triage.schemas import QualityCheckResult, QualityReport
 
+MINIMUM_ROUTING_NARRATIVE_ROWS = 500
+
 PROFILE_COLUMNS = (
     "complaint_id",
     "date_received",
@@ -69,6 +71,7 @@ def run_quality_checks(
     missing_ids = 0
     missing_labels = 0
     narrative_mismatch = 0
+    narrative_eligible_count = 0
     sent_before_received = 0
 
     with snapshot_path.open("r", encoding="utf-8") as handle:
@@ -115,6 +118,8 @@ def run_quality_checks(
                 missing_labels += 1
             narrative = row.get("narrative")
             has_text = isinstance(narrative, str) and bool(narrative.strip())
+            if has_text and len(str(narrative).strip()) >= 20 and row.get("product"):
+                narrative_eligible_count += 1
             if bool(row.get("has_narrative")) != has_text:
                 narrative_mismatch += 1
 
@@ -202,6 +207,14 @@ def run_quality_checks(
             "<=0.001",
             "has_narrative should agree with the normalized narrative field.",
         ),
+        _check(
+            "narrative_support_for_routing_evaluation",
+            narrative_eligible_count >= MINIMUM_ROUTING_NARRATIVE_ROWS,
+            "medium",
+            narrative_eligible_count,
+            MINIMUM_ROUTING_NARRATIVE_ROWS,
+            "Routing evaluation requires a sufficiently large narrative-bearing population; the model-level support gate remains authoritative.",
+        ),
     ]
 
     if manifest_path is not None:
@@ -255,13 +268,19 @@ def run_quality_checks(
         )
 
     profile = {
-        column: {
-            "null_count": nulls[column],
-            "null_rate": round(nulls[column] / denominator, 6),
-            "distinct_count_observed": len(distinct[column]),
-            "distinct_count_capped": len(distinct[column]) >= 50_000,
-        }
-        for column in PROFILE_COLUMNS
+        "routing": {
+            "narrative_eligible_count": narrative_eligible_count,
+            "minimum_narrative_eligible_count": MINIMUM_ROUTING_NARRATIVE_ROWS,
+        },
+        **{
+            column: {
+                "null_count": nulls[column],
+                "null_rate": round(nulls[column] / denominator, 6),
+                "distinct_count_observed": len(distinct[column]),
+                "distinct_count_capped": len(distinct[column]) >= 50_000,
+            }
+            for column in PROFILE_COLUMNS
+        },
     }
     report = QualityReport(
         generated_at=datetime.now(timezone.utc),

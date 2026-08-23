@@ -14,6 +14,7 @@ from cfpb_triage.monitoring import SummaryEvaluationStore, SummaryFactualityRevi
 from cfpb_triage.repository import (
     CaseNotFoundError,
     ComplaintRepository,
+    PublicWriteDisabledError,
     ReviewNotFoundError,
 )
 from cfpb_triage.schemas import (
@@ -102,6 +103,8 @@ def create_app(
             source_kind=repo.source_kind,
             model_status=str(model.get("status", "unknown")),
             timestamp=datetime.now(timezone.utc),
+            data_mode=repo.data_mode,
+            persistence_mode=repo.persistence_mode,
         )
 
     @application.get("/health", response_model=HealthResponse, tags=["health"])
@@ -144,6 +147,8 @@ def create_app(
             return repo.record_route(complaint_id, request)
         except CaseNotFoundError as exc:
             raise HTTPException(status_code=404, detail="Complaint not found") from exc
+        except PublicWriteDisabledError as exc:
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
 
     application.patch(
         f"{prefix}/cases/{{complaint_id}}/route",
@@ -373,6 +378,17 @@ def create_app(
     @application.get(f"{prefix}/model/metrics", tags=["model monitoring"])
     def model_metrics():
         return repo.model_metrics()
+
+    @application.get(f"{prefix}/metrics/monitoring", tags=["model monitoring"])
+    def monitoring():
+        return {
+            "model": repo.model_metrics(),
+            "system": repo.system_metrics(),
+            "summary_factuality": evaluation_store.metrics(),
+            "source_kind": repo.source_kind,
+            "data_mode": repo.data_mode,
+            "persistence_mode": repo.persistence_mode,
+        }
 
     @application.get(f"{prefix}/quality", tags=["data quality"])
     def quality():

@@ -58,6 +58,8 @@ class CasesResponse(StrictModel):
     page_size: int = Field(ge=1, le=200)
     source_kind: SourceKind
     as_of: date
+    data_mode: str = "unknown"
+    persistence_mode: str = "unknown"
     limitation: str = CFPB_LIMITATION
 
 
@@ -72,6 +74,8 @@ class OverviewMetrics(StrictModel):
     manual_attention_count: int = Field(ge=0)
     abstained_count: int = Field(ge=0)
     model_status: str
+    data_mode: str = "unknown"
+    persistence_mode: str = "unknown"
     limitations: list[str] = Field(
         default_factory=lambda: [CFPB_LIMITATION, NARRATIVE_NOTICE]
     )
@@ -90,6 +94,8 @@ class TrendsResponse(StrictModel):
     series: list[TrendPoint]
     source_kind: SourceKind
     as_of: date
+    data_mode: str = "unknown"
+    persistence_mode: str = "unknown"
 
 
 class AnomalyRecord(StrictModel):
@@ -110,6 +116,8 @@ class AnomaliesResponse(StrictModel):
     publication_lag_days: int = 15
     cutoff_date: date
     source_kind: SourceKind
+    data_mode: str = "unknown"
+    persistence_mode: str = "unknown"
 
 
 class UsageRecord(StrictModel):
@@ -203,6 +211,8 @@ class RouteDecisionResponse(StrictModel):
     status: Literal["approved", "overridden", "rejected"]
     reviewed_at: datetime
     ai_made_final_decision: Literal[False] = False
+    data_mode: str = "unknown"
+    persistence_mode: str = "unknown"
 
 
 class QualityCheckResult(StrictModel):
@@ -238,3 +248,5 @@ class HealthResponse(StrictModel):
     source_kind: SourceKind
     model_status: str
     timestamp: datetime
+    data_mode: str = "unknown"
+    persistence_mode: str = "unknown"

@@ -98,18 +98,41 @@ class SummaryEvaluationStore:
                 quotes_exact BOOLEAN NOT NULL,
                 included_in_review_sample BOOLEAN NOT NULL,
                 notes VARCHAR,
-                reviewed_at TIMESTAMPTZ NOT NULL
+                reviewed_at TIMESTAMPTZ NOT NULL,
+                complaint_id VARCHAR,
+                model VARCHAR,
+                draft_sha256 VARCHAR,
+                review_manifest_sha256 VARCHAR
             )
             """
         )
+        for column, column_type in (
+            ("complaint_id", "VARCHAR"),
+            ("model", "VARCHAR"),
+            ("draft_sha256", "VARCHAR"),
+            ("review_manifest_sha256", "VARCHAR"),
+        ):
+            connection.execute(
+                f"ALTER TABLE summary_factuality_reviews "
+                f"ADD COLUMN IF NOT EXISTS {column} {column_type}"
+            )
 
     def record(
-        self, summary_id: str, review: SummaryFactualityReview
+        self,
+        summary_id: str,
+        review: SummaryFactualityReview,
+        *,
+        lineage: dict[str, str] | None = None,
     ) -> dict[str, Any]:
+        lineage = lineage or {}
         row = {
             "summary_id": summary_id,
             **review.model_dump(),
             "reviewed_at": datetime.now(timezone.utc),
+            "complaint_id": lineage.get("complaint_id"),
+            "model": lineage.get("model"),
+            "draft_sha256": lineage.get("draft_sha256"),
+            "review_manifest_sha256": lineage.get("review_manifest_sha256"),
         }
         if self.demo_mode:
             with self._lock:
@@ -119,7 +142,13 @@ class SummaryEvaluationStore:
         try:
             self._initialize(connection)
             connection.execute(
-                "INSERT INTO summary_factuality_reviews VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                """
+                INSERT INTO summary_factuality_reviews (
+                    summary_id, reviewer_id, factuality_score, all_claims_supported,
+                    quotes_exact, included_in_review_sample, notes, reviewed_at,
+                    complaint_id, model, draft_sha256, review_manifest_sha256
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
                 [
                     summary_id,
                     review.reviewer_id,
@@ -129,11 +158,71 @@ class SummaryEvaluationStore:
                     review.included_in_review_sample,
                     review.notes,
                     row["reviewed_at"],
+                    row["complaint_id"],
+                    row["model"],
+                    row["draft_sha256"],
+                    row["review_manifest_sha256"],
                 ],
             )
         finally:
             connection.close()
         return row
+
+    def bind_existing_review(self, summary_id: str, *, lineage: dict[str, str]) -> None:
+        if self.demo_mode:
+            with self._lock:
+                for row in self._demo_rows:
+                    if row["summary_id"] == summary_id:
+                        for key in (
+                            "complaint_id",
+                            "model",
+                            "draft_sha256",
+                            "review_manifest_sha256",
+                        ):
+                            existing = row.get(key)
+                            value = lineage.get(key)
+                            if existing and existing != value:
+                                raise ValueError(
+                                    f"summary_id {summary_id} has conflicting review lineage"
+                                )
+                            row[key] = value
+                        return
+            raise ValueError(f"summary_id {summary_id} is not present")
+        connection = duckdb.connect(str(self.database_path))
+        try:
+            self._initialize(connection)
+            row = connection.execute(
+                """
+                SELECT complaint_id, model, draft_sha256, review_manifest_sha256
+                FROM summary_factuality_reviews WHERE summary_id = ?
+                """,
+                [summary_id],
+            ).fetchone()
+            if row is None:
+                raise ValueError(f"summary_id {summary_id} is not present")
+            for index, key in enumerate(
+                ("complaint_id", "model", "draft_sha256", "review_manifest_sha256")
+            ):
+                if row[index] is not None and str(row[index]) != lineage.get(key):
+                    raise ValueError(
+                        f"summary_id {summary_id} has conflicting review lineage"
+                    )
+            connection.execute(
+                """
+                UPDATE summary_factuality_reviews
+                SET complaint_id = ?, model = ?, draft_sha256 = ?, review_manifest_sha256 = ?
+                WHERE summary_id = ?
+                """,
+                [
+                    lineage.get("complaint_id"),
+                    lineage.get("model"),
+                    lineage.get("draft_sha256"),
+                    lineage.get("review_manifest_sha256"),
+                    summary_id,
+                ],
+            )
+        finally:
+            connection.close()
 
     def metrics(self) -> dict[str, Any]:
         expected_count, sample_manifest_sha256, parent_snapshot_sha256 = (
@@ -163,6 +252,20 @@ class SummaryEvaluationStore:
                 "exact_quote_rate": (
                     sum(row["quotes_exact"] for row in rows) / count if count else None
                 ),
+                "lineage_bound_review_count": sum(
+                    bool(row.get("review_manifest_sha256")) for row in rows
+                ),
+                "distinct_reviewed_models": len(
+                    {row.get("model") for row in rows if row.get("model")}
+                ),
+                "review_manifest_sha256": next(
+                    (
+                        row.get("review_manifest_sha256")
+                        for row in rows
+                        if row.get("review_manifest_sha256")
+                    ),
+                    None,
+                ),
                 "measurement_basis": f"manual_reviews_of_{self.source_kind}"
                 if count
                 else "no_manually_reviewed_sample",
@@ -173,7 +276,10 @@ class SummaryEvaluationStore:
             row = connection.execute(
                 """
                 SELECT count(*), avg(factuality_score), avg(all_claims_supported::INTEGER),
-                       avg(quotes_exact::INTEGER)
+                       avg(quotes_exact::INTEGER),
+                       count(*) FILTER (WHERE review_manifest_sha256 IS NOT NULL),
+                       count(DISTINCT model) FILTER (WHERE model IS NOT NULL),
+                       min(review_manifest_sha256) FILTER (WHERE review_manifest_sha256 IS NOT NULL)
                 FROM summary_factuality_reviews
                 WHERE included_in_review_sample IS TRUE
                 """
@@ -188,6 +294,9 @@ class SummaryEvaluationStore:
             "mean_factuality_score": row[1],
             "all_claims_supported_rate": row[2],
             "exact_quote_rate": row[3],
+            "lineage_bound_review_count": row[4],
+            "distinct_reviewed_models": row[5],
+            "review_manifest_sha256": row[6],
             "measurement_basis": "manual_reviewed_sample"
             if row[0]
             else "no_manually_reviewed_sample",

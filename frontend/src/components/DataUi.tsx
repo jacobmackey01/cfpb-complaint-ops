@@ -29,7 +29,7 @@ export const SourceNotice = ({ source }: { source: SourceMeta }) => {
         <div>
           <strong>Offline synthetic demonstration</strong>
           <p>
-            The API is unavailable or returned demo data. Every value on this view is illustrative—not
+            The API is unavailable or returned demo data. Every value on this view is illustrativenot
             a live CFPB observation, production result, or reviewed performance claim. Review actions
             in this demo are session-only and are not persisted.
           </p>
@@ -40,16 +40,21 @@ export const SourceNotice = ({ source }: { source: SourceMeta }) => {
   }
 
   if (source.isVerifiedPublicData) {
+    const isLiveRead = source.dataMode === 'bounded_live_cfpb_read';
     return (
-      <section className="source-notice source-public" aria-label="CFPB snapshot source">
+      <section className="source-notice source-public" aria-label="CFPB public source">
         <Database aria-hidden="true" size={20} />
         <div>
-          <strong>CFPB public-data snapshot</strong>
+          <strong>{isLiveRead ? 'Bounded live CFPB read' : 'CFPB public-data snapshot'}</strong>
           <p>
-            Frozen public snapshot{source.generatedAt ? ` as of ${formatDateTime(source.generatedAt)}` : ''};
-            this is not a live operational feed.
+            {isLiveRead
+              ? 'Current CFPB API records are read into process memory for this request; this is not a frozen snapshot, exact population volume, trained model, or durable case system.'
+              : 'Frozen public snapshot' + (source.generatedAt ? ' as of ' + formatDateTime(source.generatedAt) : '') + '; this is not a live operational feed.'}
           </p>
-          <code>source_kind={source.sourceKind}</code>
+          <p className="form-help">
+            Persistence: <strong>{source.persistenceMode}</strong>. Human actions are not shared durable records in the public demonstration.
+          </p>
+          <code>data_mode={source.dataMode} | persistence_mode={source.persistenceMode}</code>
         </div>
       </section>
     );

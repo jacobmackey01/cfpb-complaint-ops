@@ -3,10 +3,12 @@ from __future__ import annotations
 from datetime import date, timedelta
 
 import joblib
+import numpy as np
 from cfpb_triage.modeling.anomalies import anomaly_cutoff, detect_volume_anomalies
 from cfpb_triage.modeling.router import (
     TrainingRow,
     chronological_complete_month_split,
+    evaluate_router,
     score_texts,
     train_router,
 )
@@ -22,7 +24,7 @@ def _rows() -> list[TrainingRow]:
                 TrainingRow(
                     complaint_id=str(complaint),
                     received=date(2026, month, (index % 20) + 1),
-                    text=f"credit card merchant charge billing dispute statement token{index}",
+                    text=f"credit card merchant charge billing dispute statement month{month} token{index}",
                     label="Credit card",
                 )
             )
@@ -31,7 +33,7 @@ def _rows() -> list[TrainingRow]:
                 TrainingRow(
                     complaint_id=str(complaint),
                     received=date(2026, month, (index % 20) + 1),
-                    text=f"mortgage escrow servicer home payment principal token{index}",
+                    text=f"mortgage escrow servicer home payment principal month{month} token{index}",
                     label="Mortgage",
                 )
             )
@@ -122,3 +124,30 @@ def test_anomalies_are_separate_and_exclude_publication_lag() -> None:
     assert issues[0].dimension == "issue"
     products = detect_volume_anomalies(rows, dimension="product", as_of=as_of)
     assert products[0].dimension == "product"
+
+
+def test_evaluation_metrics_fail_closed_below_support_gate() -> None:
+    probabilities = np.asarray([[0.8, 0.2], [0.7, 0.3]])
+    report = evaluate_router(
+        probabilities,
+        ["Credit card", "Mortgage"],
+        np.asarray(["Credit card", "Mortgage"]),
+        threshold=0.5,
+        minimum_test_rows=3,
+        minimum_class_support=2,
+    )
+    assert report["status"] == "unavailable_insufficient_test_support"
+    assert report["metrics"]["macro_f1"] is None
+    assert report["support_gate"]["passed"] is False
+
+
+def test_duplicate_narratives_are_grouped_before_chronological_split() -> None:
+    rows = [
+        TrainingRow("early", date(2026, 1, 1), "same complaint text", "Credit card"),
+        TrainingRow("late", date(2026, 2, 1), " SAME   complaint text ", "Credit card"),
+    ]
+    from cfpb_triage.modeling.router import deduplicate_training_rows
+
+    unique, grouping = deduplicate_training_rows(rows)
+    assert [row.complaint_id for row in unique] == ["early"]
+    assert grouping["excluded_duplicate_rows"] == 1

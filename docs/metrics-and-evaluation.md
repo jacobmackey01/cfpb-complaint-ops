@@ -239,6 +239,24 @@ and leaves the frozen sample status unchanged. Imported rows with
 `included_in_review_sample=false` remain stored for audit but are excluded from
 the reported factuality denominator.
 
+### Latest private review evidence
+
+On 2026-08-23, the frozen, deterministic sample was reviewed under private local
+controls and imported without changing the source sample. The evidence is:
+
+- reviewed sample count: 50 of 50;
+- mean factuality score: 4.86 on the 1--5 rubric;
+- all-claims-supported rate: 0.90; and
+- exact-quote rate: 1.0.
+
+The sample manifest SHA-256 is
+`c9e13f5d11a98a3e63e75f423a8fca512bca59d93f67b300d988ce27ed2c4a4c`, with parent
+snapshot SHA-256 `d393f6a83dc9c5248bf969ff6470c498b84397a46dfc93f7a229360d00db0864`.
+These measurements describe the documented frozen selection frame only; they do
+not generalise to all CFPB complaints. The public Vercel demonstration does not
+persist this private review store, so it correctly reports no runtime factuality
+sample.
+
 
 
 ### Latency

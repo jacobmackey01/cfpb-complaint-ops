@@ -319,7 +319,7 @@ Deployment verification timestamp (UTC):
 Verifier:
 Automated HTTPS checks plus authenticated Vercel deployment status
 Known limitations:
-Snapshot is 10,000 rows rather than the 100,000 maximum; live reads are bounded to 25 records, complaint data are not representative, company counts are not comparative performance, and a private ID-only review worksheet is available, but summary factuality remains unreviewed (`n=0`).
+Snapshot is 10,000 rows rather than the 100,000 maximum; live reads are bounded to 25 records, complaint data are not representative, and company counts are not comparative performance. The private frozen summary review is complete (`n=50`; mean factuality 4.86, all-claims-supported rate 0.90, exact-quote rate 1.0) for sample manifest `c9e13f5d11a98a3e63e75f423a8fca512bca59d93f67b300d988ce27ed2c4a4c`. The public Vercel live-read demo intentionally does not persist private worksheets or narratives, so its runtime summary metrics remain unavailable (`n=0`).
 Rollback target:
 ```
 

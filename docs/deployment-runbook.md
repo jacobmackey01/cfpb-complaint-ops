@@ -300,8 +300,9 @@ Capture these values for each public release:
 Git repository:
 https://github.com/jacobmackey01/cfpb-complaint-ops
 Git commit SHA:
-6c4652d2ce50739a296e43088e5c54cf2f9fab3b
+7d7c26d7d7cfab4acc3f8ac48b6c3f05f250c639
 CI run URL/status:
+https://github.com/jacobmackey01/cfpb-complaint-ops/actions/runs/32675588235 (all checks passed)
 https://github.com/jacobmackey01/cfpb-complaint-ops/actions/runs/32543386111 (all checks passed)
 Snapshot or demo artifact ID:
 CFPB snapshot manifest `a7f68aeecaa6be66496fd6db8aecf0ad46dc9a4037656f33ec2ced28d6c9d57e`
@@ -313,9 +314,9 @@ Price-table version:
 `gpt-5.6-luna` pricing table in `cfpb_triage.services.summary`
 Preview deployment ID/URL:
 Production deployment ID/URL:
-API `8DcMqCkhjJJEHZvSnCCUqUDBkmkQ` / https://cfpb-complaint-ops-api.vercel.app; web `9SM3BuqLLxqskwTQ5tZPb4qiDqCu` / https://cfpb-complaint-ops-web.vercel.app
+API `6LYxFdaVxEzJ8rtFtznixgtpjAFd` / https://cfpb-complaint-ops-api.vercel.app; web `6yy7QD87aSQh4YiM9JhpbxJmDf38` / https://cfpb-complaint-ops-web.vercel.app
 Deployment verification timestamp (UTC):
-2026-08-22T01:28Z
+2026-08-24T00:08Z
 Verifier:
 Automated HTTPS checks plus authenticated Vercel deployment status
 Known limitations:

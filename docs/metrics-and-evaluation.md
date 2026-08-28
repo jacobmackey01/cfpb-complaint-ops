@@ -277,6 +277,20 @@ sample.
 
 
 
+### Public evidence visual
+
+The README figure at docs/assets/summary_factuality_review.svg is generated directly from
+the public aggregate artifact
+artifacts/public/summary_factuality_review_metrics.json. From the repository root,
+regenerate it with:
+
+    python scripts/generate_summary_factuality_visual.py
+
+The generator validates score counts, lineage-bound review support, the weighted mean,
+rates and review mode before writing deterministic SVG bytes. The figure contains
+aggregate evidence only; narratives, generated drafts and row-level review data remain
+private.
+
 ### Latency
 
 For all summary attempts, measure server-side monotonic elapsed time and report

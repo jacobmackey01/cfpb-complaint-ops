@@ -47,6 +47,11 @@ generated drafts and the row-level worksheet remain private. These results are
 for the documented frozen selection frame, not a representative population or a
 comparative company-performance claim.
 
+[![Distribution of factuality scores across 50 manually reviewed complaint summaries](docs/assets/summary_factuality_review.svg)](artifacts/public/summary_factuality_review_metrics.json)
+
+_One frozen, lineage-bound sample; it does not generalise to all CFPB complaints
+or company performance._
+
 ## Decision boundary
 
 The model proposes a route and can abstain. A person confirms or overrides the

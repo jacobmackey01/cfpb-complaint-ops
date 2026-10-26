@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import threading
 import uuid
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Literal
 
@@ -205,14 +205,14 @@ class ComplaintRepository:
             rows = self._memory_cases()
             return max(
                 (row.date_received for row in rows),
-                default=datetime.now(timezone.utc).date(),
+                default=datetime.now(UTC).date(),
             )
         connection = self._connect(read_only=True)
         try:
             value = connection.execute(
                 "SELECT max(date_received) FROM complaints"
             ).fetchone()[0]
-            return value or datetime.now(timezone.utc).date()
+            return value or datetime.now(UTC).date()
         finally:
             connection.close()
 
@@ -699,7 +699,7 @@ class ComplaintRepository:
             decision=request.decision,
             approved_route=request.approved_route,
             status=status,  # type: ignore[arg-type]
-            reviewed_at=datetime.now(timezone.utc),
+            reviewed_at=datetime.now(UTC),
             ai_made_final_decision=False,
             data_mode=self.data_mode,
             persistence_mode=self.persistence_mode,
@@ -758,7 +758,7 @@ class ComplaintRepository:
     def review_summary(
         self, summary_id: str, request: SummaryReviewRequest
     ) -> SummaryReviewResponse:
-        reviewed_at = datetime.now(timezone.utc)
+        reviewed_at = datetime.now(UTC)
         if self._demo or self._live:
             with self._lock:
                 draft = self._demo_summaries.get(summary_id)
@@ -837,7 +837,7 @@ class ComplaintRepository:
             "latency_ms": latency_ms,
             "cost_usd": cost_usd,
             "detail": detail,
-            "occurred_at": datetime.now(timezone.utc),
+            "occurred_at": datetime.now(UTC),
         }
         if self._demo or self._live:
             with self._lock:

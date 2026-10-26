@@ -4,7 +4,7 @@ import json
 import math
 from collections import Counter, defaultdict
 from collections.abc import Iterable
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Literal
 
@@ -98,7 +98,7 @@ def generate_anomaly_report(
     as_of: date | None = None,
     snapshot_sha256: str = "unknown",
 ) -> dict[str, object]:
-    as_of = as_of or datetime.now(timezone.utc).date()
+    as_of = as_of or datetime.now(UTC).date()
     connection = duckdb.connect(str(database_path), read_only=True)
     try:
         product_rows = connection.execute(
@@ -114,7 +114,7 @@ def generate_anomaly_report(
         *detect_volume_anomalies(issue_rows, dimension="issue", as_of=as_of),
     ]
     report: dict[str, object] = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "as_of": as_of.isoformat(),
         "snapshot_sha256": snapshot_sha256,
         "metric_basis": "weekly_stratified_monthly_capped_snapshot_sample",

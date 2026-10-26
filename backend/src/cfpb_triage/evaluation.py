@@ -4,7 +4,7 @@ import csv
 import hashlib
 import json
 from collections import defaultdict, deque
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -91,7 +91,7 @@ def freeze_summary_factuality_sample(
         queues = remaining
 
     payload: dict[str, Any] = {
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
         "status": "frozen_unreviewed",
         "rubric_version": SUMMARY_EVAL_RUBRIC_VERSION,
         "sample_selection": {
@@ -161,7 +161,7 @@ def build_summary_draft_manifest(
     payload: dict[str, Any] = {
         "schema_version": SUMMARY_DRAFT_MANIFEST_SCHEMA,
         "status": "private_generated_drafts",
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
         "source_sample_manifest_sha256": pack.get("sample_manifest_sha256"),
         "parent_snapshot_sha256": pack.get("parent_snapshot_sha256"),
         "draft_count": len(manifest_items),

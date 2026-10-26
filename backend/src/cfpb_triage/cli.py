@@ -4,7 +4,7 @@ import argparse
 import json
 import os
 from collections.abc import Sequence
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -65,7 +65,7 @@ def _effective_as_of(value: date | None) -> date:
     return (
         date.fromisoformat(manifest_as_of)
         if manifest_as_of
-        else datetime.now(timezone.utc).date()
+        else datetime.now(UTC).date()
     )
 
 
@@ -271,7 +271,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     qa = subparsers.add_parser("qa", aliases=["quality"], help="validate a snapshot")
     qa.add_argument("path", type=Path, nargs="?", default=SNAPSHOT_PATH)
-    qa.add_argument("--as-of", type=_date, default=datetime.now(timezone.utc).date())
+    qa.add_argument("--as-of", type=_date, default=datetime.now(UTC).date())
     qa.add_argument("--manifest", type=Path, default=MANIFEST_PATH)
     qa.set_defaults(handler=cmd_qa)
 

@@ -9,3 +9,4 @@ openai>=2,<3
 pydantic>=2.10,<3
 scikit-learn>=1.6,<2
 uvicorn[standard]>=0.34,<1
+certifi>=2026.10.19

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from enum import StrEnum
 
 
@@ -18,12 +18,12 @@ def normalize_cfpb_date(value: str | None) -> str | None:
     if not raw:
         return None
     try:
-        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(raw)
     except ValueError:
         return date.fromisoformat(raw).isoformat()
     if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
-    return parsed.astimezone(timezone.utc).date().isoformat()
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC).date().isoformat()
 
 
 def api_date_received_max(end_exclusive: date, *, mode: DateMaxMode) -> date:

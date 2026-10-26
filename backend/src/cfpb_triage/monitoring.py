@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from threading import RLock
 from typing import Any
@@ -128,7 +128,7 @@ class SummaryEvaluationStore:
         row = {
             "summary_id": summary_id,
             **review.model_dump(),
-            "reviewed_at": datetime.now(timezone.utc),
+            "reviewed_at": datetime.now(UTC),
             "complaint_id": lineage.get("complaint_id"),
             "model": lineage.get("model"),
             "draft_sha256": lineage.get("draft_sha256"),

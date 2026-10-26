@@ -6,7 +6,7 @@ import os
 import time
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -137,10 +137,10 @@ def _normalize_source_date(value: Any) -> str | None:
         return None
     try:
         if "T" in raw:
-            parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+            parsed = datetime.fromisoformat(raw)
             if parsed.tzinfo is None:
-                parsed = parsed.replace(tzinfo=timezone.utc)
-            return parsed.astimezone(timezone.utc).date().isoformat()
+                parsed = parsed.replace(tzinfo=UTC)
+            return parsed.astimezone(UTC).date().isoformat()
         return date.fromisoformat(raw[:10]).isoformat()
     except ValueError:
         # Preserve malformed source text so QA can fail closed visibly.
@@ -375,7 +375,7 @@ def download_recent_snapshot(
     manifest_path: Path = MANIFEST_PATH,
     api_client: CFPBSnapshotClient | None = None,
 ) -> dict[str, Any]:
-    as_of = as_of or datetime.now(timezone.utc).date()
+    as_of = as_of or datetime.now(UTC).date()
     windows = build_selection_windows(
         as_of=as_of,
         max_records=max_records,
@@ -409,7 +409,7 @@ def download_recent_snapshot(
     )[:max_records]
     manifest = {
         "schema_version": SNAPSHOT_SCHEMA_VERSION,
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
         "as_of_date": as_of.isoformat(),
         "source": settings.cfpb_api_url,
         "source_owner": "Consumer Financial Protection Bureau",

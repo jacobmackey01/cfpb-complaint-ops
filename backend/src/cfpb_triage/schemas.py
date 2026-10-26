@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from enum import StrEnum
 from typing import Any, Literal
 
@@ -161,7 +161,7 @@ class SummaryDraft(LLMSummaryPayload):
     cost_usd: float = Field(ge=0)
     usage: UsageRecord = Field(default_factory=UsageRecord)
     source_kind: SourceKind
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class SummaryResponse(StrictModel):

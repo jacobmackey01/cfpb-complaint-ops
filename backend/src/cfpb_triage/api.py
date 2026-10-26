@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Annotated, Literal
 
 from fastapi import FastAPI, HTTPException, Query, Response, status
@@ -102,7 +102,7 @@ def create_app(
             status="ok",
             source_kind=repo.source_kind,
             model_status=str(model.get("status", "unknown")),
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             data_mode=repo.data_mode,
             persistence_mode=repo.persistence_mode,
         )

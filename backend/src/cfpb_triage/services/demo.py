@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 from cfpb_triage.schemas import CaseRecord, SourceKind
 
@@ -11,7 +11,7 @@ DEMO_NOTICE = (
 
 
 def synthetic_cases(as_of: date | None = None) -> list[CaseRecord]:
-    as_of = as_of or datetime.now(timezone.utc).date()
+    as_of = as_of or datetime.now(UTC).date()
     rows = [
         (
             "DEMO-001",

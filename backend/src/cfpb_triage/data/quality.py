@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import Counter
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 from cfpb_triage.paths import QUALITY_PATH, SNAPSHOT_PATH
@@ -58,7 +58,7 @@ def run_quality_checks(
     manifest_path: Path | None = None,
     as_of: date | None = None,
 ) -> QualityReport:
-    as_of = as_of or datetime.now(timezone.utc).date()
+    as_of = as_of or datetime.now(UTC).date()
     nulls: Counter[str] = Counter()
     distinct: dict[str, set[str]] = {column: set() for column in PROFILE_COLUMNS}
     ids: Counter[str] = Counter()
@@ -283,7 +283,7 @@ def run_quality_checks(
         },
     }
     report = QualityReport(
-        generated_at=datetime.now(timezone.utc),
+        generated_at=datetime.now(UTC),
         snapshot_sha256=snapshot_hash,
         row_count=row_count,
         passed=all(

@@ -6,7 +6,7 @@ import unicodedata
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -580,7 +580,7 @@ def train_router(
     model_version = (
         f"product-router-{hashlib.sha256(version_material).hexdigest()[:12]}"
     )
-    generated_at = datetime.now(timezone.utc)
+    generated_at = datetime.now(UTC)
     split_payload = {
         "train_months": list(split.train_months),
         "calibration_month": split.calibration_month,
